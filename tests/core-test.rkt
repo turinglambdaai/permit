@@ -184,13 +184,16 @@
 
 (define (key-entry #:status [status "active"]
                    #:not-before [not-before 'null]
-                   #:not-after [not-after 'null])
+                   #:not-after [not-after 'null]
+                   #:purposes [purposes '("entitlement" "trial" "trial-extension" "activation")])
   (hasheq 'algorithm
           "Ed25519"
           'public_key
           (public-key->base64 public-key)
           'status
           status
+          'purposes
+          purposes
           'not_before
           not-before
           'not_after
@@ -229,6 +232,17 @@
 (check-exn exn:fail?
            (lambda ()
              (read-envelope (open-input-bytes (bytes-append envelope-bytes #"{}")))))
+
+;; Signed/trusted JSON inputs reject duplicate object keys before semantic use.
+(check-exn #rx"duplicate JSON object member"
+           (lambda ()
+             (parse-credential-payload
+              #"{\"protocol\":\"permit\",\"protocol\":\"permit\"}")))
+(check-exn #rx"duplicate JSON object member"
+           (lambda ()
+             (read-envelope
+              (open-input-string
+               "{\"permit_version\":1,\"permit_version\":1,\"algorithm\":\"Ed25519\",\"key_id\":\"x\",\"payload\":\"\",\"signature\":\"\"}"))))
 
 ;; Strict time and schema validation.
 (check-exn #rx"invalid issued_at"
@@ -511,6 +525,15 @@
                            (constraints)
                            #:issued-at "2027-01-01T00:00:00Z")
               retired-window-store)))
+
+;; Key purpose separation prevents an online activation signer from minting
+;; durable entitlements even when the signature is otherwise valid.
+(define activation-only-store
+  (jsexpr->trust-store
+   (store-value-with (key-entry #:purposes '("activation")))))
+(check-exn #rx"not authorized for credential type"
+           (lambda ()
+             (verify-credential exact-envelope activation-only-store)))
 
 ;; Revocation is the explicit mechanism that invalidates all credentials from a
 ;; compromised key.
