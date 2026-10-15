@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/turinglambdaai/permit/actions/workflows/ci.yml/badge.svg)](https://github.com/turinglambdaai/permit/actions/workflows/ci.yml) ![Racket](https://img.shields.io/badge/Racket-9F1D20?logo=racket&logoColor=white) [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE) ![Protocol](https://img.shields.io/badge/protocol-v1-3559E0)
 
-[English](README.md) · **中文** · [产品主页](https://permit.jrtx.site)
+[English](README.md) · **中文**
 
 Permit 是一套与应用框架无关的协议及 Racket 参考实现，只回答一个产品问题：
 

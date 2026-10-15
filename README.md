@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/turinglambdaai/permit/actions/workflows/ci.yml/badge.svg)](https://github.com/turinglambdaai/permit/actions/workflows/ci.yml) ![Racket](https://img.shields.io/badge/Racket-9F1D20?logo=racket&logoColor=white) [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE) ![Protocol](https://img.shields.io/badge/protocol-v1-3559E0)
 
-**English** · [中文](README.zh-CN.md) · [Website](https://permit.jrtx.site)
+**English** · [中文](README.zh-CN.md)
 
 Permit is a framework-neutral protocol and Racket reference implementation for answering one product question:
 
