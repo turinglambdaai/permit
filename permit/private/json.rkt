@@ -1,0 +1,170 @@
+#lang racket/base
+
+(require json
+         racket/port
+         racket/string)
+
+(provide read-json-bytes/strict
+         read-json-source/strict)
+
+(define max-depth 64)
+
+(define (fail who message . fields)
+  (apply raise-arguments-error who message fields))
+
+(define (json-whitespace? ch)
+  (or (char=? ch #\space)
+      (char=? ch #\tab)
+      (char=? ch #\return)
+      (char=? ch #\newline)))
+
+(define (read-json-bytes/strict who raw)
+  (unless (bytes? raw)
+    (raise-argument-error who "bytes?" raw))
+  (define text
+    (with-handlers ([exn:fail?
+                     (lambda (e)
+                       (fail who
+                             "JSON is not valid UTF-8"
+                             "detail"
+                             (exn-message e)))])
+      (bytes->string/utf-8 raw)))
+  (define length* (string-length text))
+
+  (define (skip-ws index)
+    (let loop ([index index])
+      (if (and (< index length*) (json-whitespace? (string-ref text index)))
+          (loop (add1 index))
+          index)))
+
+  (define (scan-string index)
+    (unless (and (< index length*) (char=? (string-ref text index) #\"))
+      (fail who "expected JSON string" "offset" index))
+    (let loop ([cursor (add1 index)])
+      (when (>= cursor length*)
+        (fail who "unterminated JSON string" "offset" index))
+      (define ch (string-ref text cursor))
+      (cond
+        [(char=? ch #\") (add1 cursor)]
+        [(char=? ch #\\)
+         (when (>= (add1 cursor) length*)
+           (fail who "unterminated JSON escape" "offset" cursor))
+         (loop (+ cursor 2))]
+        [else (loop (add1 cursor))])))
+
+  (define (decode-object-key start end)
+    (define token (substring text start end))
+    (define value
+      (with-handlers ([exn:fail?
+                       (lambda (e)
+                         (fail who
+                               "invalid JSON object key"
+                               "offset"
+                               start
+                               "detail"
+                               (exn-message e)))])
+        (read-json (open-input-string token))))
+    (unless (string? value)
+      (fail who "JSON object key must decode to a string" "offset" start))
+    value)
+
+  (define scan-value #f)
+
+  (define (scan-array index depth)
+    (when (> depth max-depth)
+      (fail who "JSON nesting exceeds protocol limit" "max_depth" max-depth))
+    (let loop ([cursor (skip-ws (add1 index))])
+      (when (>= cursor length*)
+        (fail who "unterminated JSON array" "offset" index))
+      (cond
+        [(char=? (string-ref text cursor) #\]) (add1 cursor)]
+        [else
+         (define after-value (skip-ws (scan-value cursor depth)))
+         (when (>= after-value length*)
+           (fail who "unterminated JSON array" "offset" index))
+         (define delimiter (string-ref text after-value))
+         (cond
+           [(char=? delimiter #\,) (loop (skip-ws (add1 after-value)))]
+           [(char=? delimiter #\]) (add1 after-value)]
+           [else
+            (fail who
+                  "expected comma or closing bracket"
+                  "offset"
+                  after-value)])])))
+
+  (define (scan-object index depth)
+    (when (> depth max-depth)
+      (fail who "JSON nesting exceeds protocol limit" "max_depth" max-depth))
+    (define seen (make-hash))
+    (let loop ([cursor (skip-ws (add1 index))])
+      (when (>= cursor length*)
+        (fail who "unterminated JSON object" "offset" index))
+      (cond
+        [(char=? (string-ref text cursor) #\}) (add1 cursor)]
+        [else
+         (define key-start cursor)
+         (define key-end (scan-string key-start))
+         (define key (decode-object-key key-start key-end))
+         (when (hash-has-key? seen key)
+           (fail who "duplicate JSON object member" "key" key "offset" key-start))
+         (hash-set! seen key #t)
+         (define colon (skip-ws key-end))
+         (unless (and (< colon length*) (char=? (string-ref text colon) #\:))
+           (fail who "expected colon after JSON object key" "offset" colon))
+         (define after-value
+           (skip-ws (scan-value (skip-ws (add1 colon)) depth)))
+         (when (>= after-value length*)
+           (fail who "unterminated JSON object" "offset" index))
+         (define delimiter (string-ref text after-value))
+         (cond
+           [(char=? delimiter #\,) (loop (skip-ws (add1 after-value)))]
+           [(char=? delimiter #\}) (add1 after-value)]
+           [else
+            (fail who
+                  "expected comma or closing brace"
+                  "offset"
+                  after-value)])])))
+
+  (set! scan-value
+        (lambda (index depth)
+          (define cursor (skip-ws index))
+          (when (>= cursor length*)
+            (fail who "expected JSON value" "offset" cursor))
+          (define ch (string-ref text cursor))
+          (cond
+            [(char=? ch #\{) (scan-object cursor (add1 depth))]
+            [(char=? ch #\[) (scan-array cursor (add1 depth))]
+            [(char=? ch #\") (scan-string cursor)]
+            [else
+             (let loop ([end cursor])
+               (cond
+                 [(>= end length*) end]
+                 [else
+                  (define next (string-ref text end))
+                  (if (or (json-whitespace? next)
+                          (char=? next #\,)
+                          (char=? next #\])
+                          (char=? next #\}))
+                      end
+                      (loop (add1 end)))]))])))
+
+  (define scanned-end (skip-ws (scan-value 0 0)))
+  (unless (= scanned-end length*)
+    (fail who "trailing data after JSON value" "offset" scanned-end))
+
+  ;; The scanner is deliberately only the structural/duplicate-key guard.
+  ;; The standard JSON reader remains authoritative for string escapes,
+  ;; numbers, literals, and the resulting Racket jsexpr.
+  (with-handlers ([exn:fail?
+                   (lambda (e)
+                     (fail who "invalid JSON" "detail" (exn-message e)))])
+    (read-json (open-input-bytes raw))))
+
+(define (read-json-source/strict who source)
+  (cond
+    [(input-port? source)
+     (read-json-bytes/strict who (port->bytes source))]
+    [(path-string? source)
+     (read-json-bytes/strict who (file->bytes source))]
+    [else
+     (raise-argument-error who "(or/c input-port? path-string?)" source)]))
