@@ -23,7 +23,7 @@
 (define trial-extension-fields
   '(credential_id trial_id extensions issued_at issuer not_before protocol type
                   use_expires_at version))
-(define grant-fields '(addons capabilities edition features scope))
+(define grant-fields '(addons capabilities edition feature_policy features scope))
 (define scope-fields '(product_families products))
 (define constraints-fields
   '(activation_required features_through installation_id limits updates_through
@@ -107,11 +107,25 @@
           "non-empty string or null"
           (hash-ref value 'edition #f)
           "grant.edition")
+  (define feature-policy (hash-ref value 'feature_policy #f))
+  (unless (member feature-policy '("explicit" "published-through"))
+    (fail who
+          "invalid grant.feature_policy"
+          "expected"
+          '("explicit" "published-through")
+          "value"
+          feature-policy))
+  (define features (hash-ref value 'features #f))
   (expect who
           unique-string-list?
           "list of unique non-empty strings"
-          (hash-ref value 'features #f)
+          features
           "grant.features")
+  (when (member "*" features)
+    (fail who
+          "feature id * is reserved; use feature_policy=published-through"
+          "features"
+          features))
   (expect who
           unique-string-list?
           "list of unique non-empty strings"
