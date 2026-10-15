@@ -62,12 +62,28 @@
                   'product_families '("automotive-tools"))
           'edition
           "team"
+          'feature_policy
+          "explicit"
           'features
           '("pcap-export" "engine-control")
           'addons
           '("report-pack")
           'capabilities
           (hasheq 'team-members 5 'devices 10)))
+
+(define published-through-grant
+  (hasheq 'scope
+          (hasheq 'products '("gptp-studio") 'product_families '())
+          'edition
+          "pro"
+          'feature_policy
+          "published-through"
+          'features
+          '()
+          'addons
+          '()
+          'capabilities
+          (hasheq)))
 
 (define (entitlement credential-id
                      constraints-value
@@ -275,7 +291,8 @@
 (define perpetual-feature-window
   (issue
    (entitlement "cred_feature_window"
-                (constraints #:features "2027-10-15T23:59:59Z"))))
+                (constraints #:features "2027-10-15T23:59:59Z")
+                #:grants (list published-through-grant))))
 (check-true
  (feature-entitled? perpetual-feature-window
                     "gptp-studio"
@@ -289,24 +306,19 @@
                     #:published-at "2027-10-16T00:00:00Z"
                     #:at "2030-01-01T00:00:00Z"))
 
+(check-true
+ (feature-entitled? perpetual
+                    "gptp-studio"
+                    "pcap-export"
+                    #:published-at "2099-01-01T00:00:00Z"
+                    #:at "2030-01-01T00:00:00Z"))
 
-(define wildcard-grant
-  (hasheq 'scope
-          (hasheq 'products '("gptp-studio") 'product_families '())
-          'edition
-          "pro"
-          'features
-          '("*")
-          'addons
-          '()
-          'capabilities
-          (hasheq)))
 
 (define future-feature-window
   (issue
    (entitlement "cred_future_feature_window"
                 (constraints #:features "2027-10-15T23:59:59Z")
-                #:grants (list wildcard-grant))))
+                #:grants (list published-through-grant))))
 (check-true
  (feature-entitled? future-feature-window
                     "gptp-studio"
@@ -464,6 +476,7 @@
         (hasheq 'scope
                 (hasheq 'products '("gptp-studio") 'product_families '())
                 'edition "team"
+                'feature_policy "explicit"
                 'features '()
                 'addons '()
                 'capabilities (hasheq 'team-members 99))))
@@ -525,6 +538,8 @@
           (hasheq 'products '("gptp-studio") 'product_families '())
           'edition
           'null
+          'feature_policy
+          "explicit"
           'features
           '()
           'addons
@@ -580,6 +595,8 @@
               (hasheq 'products '("gptp-studio") 'product_families '())
               'edition
               'null
+              'feature_policy
+              "explicit"
               'features
               '()
               'addons
