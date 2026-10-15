@@ -24,7 +24,7 @@
       },
       "edition": "pro",
       "features": [
-        "pro-feature"
+        "*"
       ],
       "addons": [],
       "capabilities": {}
@@ -33,7 +33,7 @@
   "constraints": {
     "use_expires_at": null,
     "updates_through": "2027-10-15T23:59:59Z",
-    "features_through": null,
+    "features_through": "2027-10-15T23:59:59Z",
     "version_policy": {
       "min": null,
       "max": null
