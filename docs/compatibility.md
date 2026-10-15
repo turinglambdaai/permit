@@ -22,7 +22,7 @@ Protocol v1 uses canonical padded standard Base64 in the envelope so encoders ha
 
 Payloads and wrappers contain exactly one JSON value. Security-critical objects use exact field sets.
 
-Issuers must not emit duplicate object member names. Duplicate-member behavior differs among JSON implementations and therefore cannot be a portable authorization mechanism.
+JSON object member names must be unique. Conforming verifiers reject duplicates rather than accepting parser-specific first-wins or last-wins behavior; this rule applies recursively to the envelope, trust store, payload, and extensions.
 
 ## SemVer
 
