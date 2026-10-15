@@ -60,7 +60,7 @@ extensions
 
 A scope MUST name at least one product or product family. Identifier lists MUST NOT contain duplicates.
 
-`edition` is either a non-empty string or `null`; `null` lets a credential grant only an add-on/feature without pretending to change the product edition. Features and add-ons are boolean rights. Capabilities are finite signed scalar values. If several matching grants define the same capability with different values, a conforming policy engine must fail closed rather than silently depend on list order.
+`edition` is either a non-empty string or `null`; `null` lets a credential grant only an add-on/feature without pretending to change the product edition. Features and add-ons are boolean rights. The reserved feature id `"*"` means “all product features whose introduction timestamp is allowed by `features_through`”; it is what makes a future-feature subscription possible without reissuing the credential for every new feature ID. Explicit feature IDs remain useful for individually sold capabilities. Capabilities are finite signed scalar values. If several matching grants define the same capability with different values, a conforming policy engine must fail closed rather than silently depend on list order.
 
 ## Constraints
 
@@ -91,20 +91,23 @@ features_through = null
 **Perpetual + maintenance updates**
 
 ```text
-use_expires_at  = null
-updates_through = maintenance_end
+use_expires_at   = null
+updates_through  = maintenance_end
+features_through = maintenance_end
+features         = ["*"]
 ```
 
-An installed version published before the cutoff remains usable after the cutoff.
+An installed version and the paid features introduced before the cutoff remain usable after the cutoff. Mirroring the cutoff into `features_through` prevents a manually copied newer binary from bypassing the maintenance boundary.
 
 **Perpetual + future-feature window**
 
 ```text
 use_expires_at   = null
 features_through = feature_window_end
+features         = ["*"]
 ```
 
-Features published before the cutoff remain owned after the cutoff.
+Application updates may continue forever, but paid features introduced before the cutoff remain owned after the cutoff. A later feature ID does not need to have existed when the credential was originally signed.
 
 **True subscription**
 
