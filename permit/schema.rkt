@@ -30,6 +30,7 @@
 (define limits-fields '(concurrent_seats device_activations named_seats))
 (define version-policy-fields '(max min))
 (define subject-fields '(display id type))
+(define subject-types '("person" "organization" "account" "device" "installation" "anonymous"))
 
 (define (fail who message . fields)
   (apply raise-arguments-error who message fields))
@@ -76,7 +77,14 @@
 
 (define (validate-subject who value)
   (exact-fields! who value subject-fields "subject")
-  (expect who non-empty-string? "non-empty string" (hash-ref value 'type #f) "subject.type")
+  (define subject-type (hash-ref value 'type #f))
+  (unless (member subject-type subject-types)
+    (fail who
+          "invalid subject.type"
+          "expected"
+          subject-types
+          "value"
+          subject-type))
   (expect who non-empty-string? "non-empty string" (hash-ref value 'id #f) "subject.id")
   (expect who (nullable string?) "string or null" (hash-ref value 'display #f) "subject.display"))
 
