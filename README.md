@@ -118,12 +118,12 @@ Protocol v1 includes:
 - `entitlement`, `trial`, `trial-extension`, and `activation` credentials
 - independent `use_expires_at`, `updates_through`, and `features_through` windows
 - optional product-version bounds and installation binding
-- edition, feature, add-on, bundle, and scalar-capability grants
+- edition, explicit-feature, published-through future-feature, add-on, bundle, and scalar-capability grants
 - team, named-seat, device, and concurrent-seat limits
 - stable `entitlement_id` + monotonic `revision` for renewals and reissues
 - signed absolute-date trial extensions that are replay-safe
 - short-lived activation leases bound to the exact entitlement snapshot, with explicit offline grace
-- multi-key trust stores with `next`, `active`, `retired`, and `revoked` states
+- multi-key trust stores with `next`, `active`, `retired`, and `revoked` states plus per-key credential purposes
 - deterministic cross-language test vectors
 
 Start with the [normative Protocol v1 specification](docs/protocol-v1.md), then see [entitlements](docs/entitlement-v1.md), [activation](docs/activation-v1.md), [trust](docs/trust-model.md), [lifecycle](docs/lifecycle.md), [compatibility](docs/compatibility.md), [threat model](docs/threat-model.md), and the [management boundary](docs/management-boundaries.md).
