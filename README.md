@@ -207,7 +207,7 @@ Seat allocation, device reclamation, subscription renewal, and account recovery 
 ```bash
 raco pkg install --auto --no-docs --link
 raco make permit/main.rkt permit/cli.rkt
-raco test tests/
+raco test permit-test/
 ```
 
 The deterministic corpus under [`test-vectors/v1`](test-vectors/v1) is the interoperability contract for other language implementations.
@@ -220,7 +220,7 @@ permit/
 ├── docs/                   # normative protocol and management boundary
 ├── examples/               # schema-valid commercial model payloads
 ├── test-vectors/v1/        # deterministic cross-language corpus
-├── tests/                  # unit, policy and vector tests
+├── permit-test/                  # unit, policy and vector tests
 └── site/                   # bilingual product homepage
 ```
 

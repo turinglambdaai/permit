@@ -207,7 +207,7 @@ Permit v0.1 **不实现**支付、客户账号、邮件、定价、税务、管�
 ```bash
 raco pkg install --auto --no-docs --link
 raco make permit/main.rkt permit/cli.rkt
-raco test tests/
+raco test permit-test/
 ```
 
 [`test-vectors/v1`](test-vectors/v1) 下的确定性语料是其他语言实现的互操作契约。
@@ -220,7 +220,7 @@ permit/
 ├── docs/                   # 规范协议与管理边界
 ├── examples/               # 已通过 schema 校验的商业模型模板
 ├── test-vectors/v1/        # 确定性跨语言语料
-├── tests/                  # 单元、策略与向量测试
+├── permit-test/                  # 单元、策略与向量测试
 └── site/                   # 双语产品主页
 ```
 

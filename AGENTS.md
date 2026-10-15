@@ -27,5 +27,5 @@ Do not add payment processing, accounts, email, dashboards, pricing, tax, hosted
 - Update `docs/protocol-v1.md` for every wire-format or normative semantic change.
 - Add or update deterministic test vectors for every signing-format change.
 - Preserve older vectors unless the protocol version intentionally changes.
-- Run `raco make permit/main.rkt permit/cli.rkt`, `raco test tests/`, and a clean package install before release.
+- Run `raco make permit/main.rkt permit/cli.rkt`, `raco test permit-test/`, and a clean package install before release.
 - Never commit private production key material. Test keys must be clearly marked public and deterministic.
