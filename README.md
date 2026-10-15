@@ -158,6 +158,22 @@ An online-managed product verifies both the durable right and a short-lived inst
 
 An offline product omits the activation layer entirely.
 
+## Local first-run trials
+
+A unique local trial cannot be signed before an app contacts an issuer, so Permit keeps it outside Protocol v1 and provides a small storage-agnostic runtime instead:
+
+```racket
+(define trial
+  (make-local-trial #:duration-seconds (* 14 24 60 60)))
+
+(define result (evaluate-local-trial trial))
+(save-local-state! (local-trial-evaluation-state result))
+```
+
+The state uses a random trial id and a last-seen clock high-water mark. It can also consume verified Protocol v1 `trial-extension` credentials. This is deliberate nuisance resistance, not a claim that an offline local trial cannot be reset by a user controlling the machine.
+
+`generate-installation-id` provides the same privacy-preserving random identity style for products that opt into activation leases. See [local trials and installation identity](docs/local-trials.md).
+
 ## Trust and rotation
 
 Applications ship only public keys. A trust store can stage a `next` key before an issuer starts signing with it, keep an `active` key for normal issuance, retain a `retired` key for credentials issued before its issuance cutoff, and reject a `revoked` key immediately. Key time windows constrain the credential's authenticated `issued_at`, not the future wall-clock moment when a perpetual credential is verified.
