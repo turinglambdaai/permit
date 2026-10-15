@@ -158,6 +158,22 @@ Protocol v1 包含：
 
 纯离线产品完全可以省略 activation 层。
 
+## 本地首次试用
+
+应用第一次运行、尚未联系签发端时，不可能拥有一份针对这个安装实例唯一签名的 Trial。因此 Permit 不把这种状态硬塞进 Protocol v1，而提供一个很小的、与存储实现无关的本地 Trial 状态机：
+
+```racket
+(define trial
+  (make-local-trial #:duration-seconds (* 14 24 60 60)))
+
+(define result (evaluate-local-trial trial))
+(save-local-state! (local-trial-evaluation-state result))
+```
+
+状态使用随机 trial id 与 `last_seen_at` 时钟高水位，也可以消费已经验签的 Protocol v1 `trial-extension`。这只是合理的防误重置能力，不声称能阻止完全控制本机的用户删除或回滚状态。
+
+需要 activation 的产品可用 `generate-installation-id` 生成同样隐私友好的随机安装标识。详见[本地 Trial 与安装标识](docs/local-trials.md)。
+
 ## 信任与密钥轮换
 
 应用只携带公钥。信任库可以先放入带未来签发起始时间的 `next` 密钥，再让签发端切换；用 `active` 密钥进行正常签发；`retired` 密钥保留明确的签发截止时间并继续验证截止前签出的永久凭证；`revoked` 密钥则立即失去信任。密钥时间窗约束的是凭证中已经签名的 `issued_at`，不是多年以后客户端执行验证的当前时间。
