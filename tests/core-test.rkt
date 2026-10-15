@@ -319,6 +319,11 @@
                     "agent-mode-added-later"
                     #:published-at "2027-11-01T00:00:00Z"
                     #:at "2030-01-01T00:00:00Z"))
+(check-false
+ (feature-entitled? future-feature-window
+                    "gptp-studio"
+                    "agent-mode-added-later"
+                    #:at "2030-01-01T00:00:00Z"))
 
 ;; True subscription.
 (define subscription
@@ -432,6 +437,17 @@
                 (constraints #:minimum "2.0.0" #:maximum "3.0.0"))))
 (check-true (version-allowed? bounded "2.5.0"))
 (check-true (version-allowed? bounded "3.0.0"))
+(check-false
+ (feature-entitled? bounded
+                    "gptp-studio"
+                    "pcap-export"
+                    #:at "2026-06-01T00:00:00Z"))
+(check-true
+ (feature-entitled? bounded
+                    "gptp-studio"
+                    "pcap-export"
+                    #:version "2.5.0"
+                    #:at "2026-06-01T00:00:00Z"))
 (check-false (version-allowed? bounded "3.0.1"))
 (check-false (version-allowed? bounded "2.0.0-alpha"))
 (check-exn exn:fail? (lambda () (version-allowed? bounded "2.0")))
