@@ -1,7 +1,6 @@
 #lang racket/base
 
 (require json
-         racket/port
          "crypto.rkt"
          "private/encoding.rkt")
 
@@ -16,6 +15,13 @@
 (struct permit-envelope (key-id payload signature) #:transparent)
 
 (define envelope-fields '(algorithm key_id payload permit_version signature))
+
+(define (read-complete-json who in)
+  (define value (read-json in))
+  (define trailing (read-json in))
+  (unless (eof-object? trailing)
+    (raise-arguments-error who "input must contain exactly one JSON value"))
+  value)
 
 (define (make-signed-envelope key-id payload private-key)
   (unless (and (string? key-id) (positive? (string-length key-id)))
@@ -72,8 +78,11 @@
 (define (read-envelope source)
   (define value
     (cond
-      [(input-port? source) (read-json source)]
-      [(path-string? source) (call-with-input-file source read-json #:mode 'text)]
+      [(input-port? source) (read-complete-json 'read-envelope source)]
+      [(path-string? source)
+       (call-with-input-file source
+         (lambda (in) (read-complete-json 'read-envelope in))
+         #:mode 'text)]
       [else (raise-argument-error 'read-envelope "(or/c input-port? path-string?)" source)]))
   (jsexpr->envelope value))
 
@@ -88,4 +97,6 @@
     [else (raise-argument-error 'write-envelope "(or/c output-port? path-string?)" destination)]))
 
 (define (verify-envelope-signature envelope public-key)
-  (ed25519-verify public-key (permit-envelope-payload envelope) (permit-envelope-signature envelope)))
+  (ed25519-verify public-key
+                  (permit-envelope-payload envelope)
+                  (permit-envelope-signature envelope)))
