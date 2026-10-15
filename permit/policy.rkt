@@ -35,6 +35,8 @@
   (and (entitlement-like? entitlement-claims)
        (activation-claims? activation-claims)
        (time-active? activation-claims at)
+       (equal? (hash-ref activation-claims 'issuer)
+               (hash-ref entitlement-claims 'issuer))
        (equal? (hash-ref activation-claims 'entitlement_id)
                (hash-ref entitlement-claims 'entitlement_id))
        (equal? (hash-ref activation-claims 'entitlement_credential_id)
@@ -52,6 +54,8 @@
   (and (equal? (hash-ref trial-claims 'type #f) "trial")
        (trial-extension-claims? extension-claims)
        (time-active? extension-claims at)
+       (equal? (hash-ref extension-claims 'issuer)
+               (hash-ref trial-claims 'issuer))
        (equal? (hash-ref extension-claims 'trial_id)
                (hash-ref trial-claims 'entitlement_id))))
 
