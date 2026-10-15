@@ -1,0 +1,83 @@
+{
+  "protocol": "permit-conformance",
+  "version": 1,
+  "cases": [
+    {
+      "name": "valid-active",
+      "credential": "entitlement.permit.json",
+      "trust_store": "trust-store.json",
+      "expected": "verify"
+    },
+    {
+      "name": "tampered-payload",
+      "credential": "tampered-payload.permit.json",
+      "trust_store": "trust-store.json",
+      "expected": "signature-reject"
+    },
+    {
+      "name": "unknown-key-id",
+      "credential": "unknown-key.permit.json",
+      "trust_store": "trust-store.json",
+      "expected": "unknown-key-reject"
+    },
+    {
+      "name": "retired-key-historical-credential",
+      "credential": "entitlement.permit.json",
+      "trust_store": "retired-trust-store.json",
+      "expected": "verify"
+    },
+    {
+      "name": "revoked-key",
+      "credential": "entitlement.permit.json",
+      "trust_store": "revoked-trust-store.json",
+      "expected": "revoked-key-reject"
+    },
+    {
+      "name": "next-key-before-issuance-window",
+      "credential": "entitlement.permit.json",
+      "trust_store": "next-future-trust-store.json",
+      "expected": "issuance-window-reject"
+    },
+    {
+      "name": "duplicate-key-alias",
+      "trust_store": "duplicate-key-alias-trust-store.json",
+      "expected": "trust-store-reject"
+    },
+    {
+      "name": "maintenance-cutoff-inclusive",
+      "credential": "entitlement.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "update",
+        "product": "gptp-studio",
+        "published_at": "2027-10-15T23:59:59Z",
+        "at": "2030-01-01T00:00:00Z",
+        "version": "2.0.0"
+      },
+      "expected": true
+    },
+    {
+      "name": "maintenance-cutoff-after",
+      "credential": "entitlement.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "update",
+        "product": "gptp-studio",
+        "published_at": "2027-10-16T00:00:00Z",
+        "at": "2030-01-01T00:00:00Z",
+        "version": "2.0.0"
+      },
+      "expected": false
+    },
+    {
+      "name": "version-bound",
+      "credential": "entitlement.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "version",
+        "version": "4.0.0"
+      },
+      "expected": false
+    }
+  ]
+}
