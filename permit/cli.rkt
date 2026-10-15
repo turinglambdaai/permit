@@ -7,6 +7,7 @@
          "credential.rkt"
          "crypto.rkt"
          "envelope.rkt"
+         (only-in "issuer.rkt" issue-credential)
          "policy.rkt"
          "private/time.rkt"
          "schema.rkt"
@@ -81,25 +82,66 @@
   (write-json-line
    (hasheq 'private_key private-path 'public_key public-path 'trust_store (or trust-path 'null))))
 
-(define (issue-command args #:program [program "raco permit issue"])
+(define (issue-command args)
   (define key-path #f)
   (define key-id #f)
+  (define trust-path #f)
   (define payload-path #f)
   (define output-path #f)
   (parameterize ([current-command-line-arguments (list->vector args)])
-    (command-line #:program program
-                  #:once-each [("--key") path "Ed25519 private key" (set! key-path path)]
-                  [("--key-id") value "Trust-store key identifier" (set! key-id value)]
-                  [("--payload") path "Credential payload JSON" (set! payload-path path)]
-                  [("--output") path "Signed credential output" (set! output-path path)]))
+    (command-line
+     #:program "raco permit issue"
+     #:once-each
+     [("--key") path "Ed25519 private key" (set! key-path path)]
+     [("--key-id") value "Trust-store key identifier" (set! key-id value)]
+     [("--trust-store") path "Trust store governing safe issuance" (set! trust-path path)]
+     [("--payload") path "Credential payload JSON" (set! payload-path path)]
+     [("--output") path "Signed credential output" (set! output-path path)]))
   (for ([entry (in-list (list (cons "--key" key-path)
                               (cons "--key-id" key-id)
+                              (cons "--trust-store" trust-path)
                               (cons "--payload" payload-path)
                               (cons "--output" output-path)))])
     (require-option 'issue (car entry) (cdr entry)))
   (define payload (file->bytes payload-path))
   (define claims (parse-credential-payload payload))
-  (define envelope (make-signed-envelope key-id payload (read-ed25519-private-key key-path)))
+  (define envelope
+    (issue-credential payload
+                      (read-ed25519-private-key key-path)
+                      key-id
+                      (read-trust-store trust-path)))
+  (write-envelope envelope output-path)
+  (write-json-line
+   (hasheq 'credential output-path
+           'credential_id (hash-ref claims 'credential_id)
+           'type (hash-ref claims 'type)
+           'key_id key-id
+           'payload_bytes (bytes-length payload))))
+
+;; Low-level escape hatch for tests/recovery tooling. It validates the payload
+;; schema but intentionally does not apply trust-store issuance policy.
+(define (sign-command args)
+  (define key-path #f)
+  (define key-id #f)
+  (define payload-path #f)
+  (define output-path #f)
+  (parameterize ([current-command-line-arguments (list->vector args)])
+    (command-line
+     #:program "raco permit sign"
+     #:once-each
+     [("--key") path "Ed25519 private key" (set! key-path path)]
+     [("--key-id") value "Envelope key identifier" (set! key-id value)]
+     [("--payload") path "Credential payload JSON" (set! payload-path path)]
+     [("--output") path "Signed credential output" (set! output-path path)]))
+  (for ([entry (in-list (list (cons "--key" key-path)
+                              (cons "--key-id" key-id)
+                              (cons "--payload" payload-path)
+                              (cons "--output" output-path)))])
+    (require-option 'sign (car entry) (cdr entry)))
+  (define payload (file->bytes payload-path))
+  (define claims (parse-credential-payload payload))
+  (define envelope
+    (make-signed-envelope key-id payload (read-ed25519-private-key key-path)))
   (write-envelope envelope output-path)
   (write-json-line
    (hasheq 'credential output-path
@@ -291,8 +333,8 @@
 (define (usage)
   (displayln "Permit — signed entitlements for independent software")
   (displayln "usage: raco permit <keygen|issue|sign|verify|inspect|check> [options]")
-  (displayln "  issue   validate and sign a credential payload")
-  (displayln "  sign    alias for issue (low-level signing workflow)"))
+  (displayln "  issue   safely issue using trust-store key policy")
+  (displayln "  sign    low-level schema-valid signing without issuer policy"))
 
 (define (run-cli [args (vector->list (current-command-line-arguments))])
   (with-handlers ([exn:fail? (lambda (e)
@@ -304,7 +346,7 @@
        (case (string->symbol (car args))
          [(keygen) (keygen (cdr args))]
          [(issue) (issue-command (cdr args))]
-         [(sign) (issue-command (cdr args) #:program "raco permit sign")]
+         [(sign) (sign-command (cdr args))]
          [(verify) (verify-command (cdr args))]
          [(inspect) (inspect-command (cdr args))]
          [(check) (check-command (cdr args))]
