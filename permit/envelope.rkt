@@ -2,7 +2,8 @@
 
 (require json
          "crypto.rkt"
-         "private/encoding.rkt")
+         "private/encoding.rkt"
+         "private/json.rkt")
 
 (provide (struct-out permit-envelope)
          make-signed-envelope
@@ -15,13 +16,6 @@
 (struct permit-envelope (key-id payload signature) #:transparent)
 
 (define envelope-fields '(algorithm key_id payload permit_version signature))
-
-(define (read-complete-json who in)
-  (define value (read-json in))
-  (define trailing (read-json in))
-  (unless (eof-object? trailing)
-    (raise-arguments-error who "input must contain exactly one JSON value"))
-  value)
 
 (define (make-signed-envelope key-id payload private-key)
   (unless (and (string? key-id) (positive? (string-length key-id)))
@@ -76,15 +70,7 @@
   (permit-envelope key-id payload signature))
 
 (define (read-envelope source)
-  (define value
-    (cond
-      [(input-port? source) (read-complete-json 'read-envelope source)]
-      [(path-string? source)
-       (call-with-input-file source
-         (lambda (in) (read-complete-json 'read-envelope in))
-         #:mode 'text)]
-      [else (raise-argument-error 'read-envelope "(or/c input-port? path-string?)" source)]))
-  (jsexpr->envelope value))
+  (jsexpr->envelope (read-json-source/strict 'read-envelope source)))
 
 (define (write-envelope envelope destination)
   (define (write-to out)
