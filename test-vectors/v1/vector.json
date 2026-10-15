@@ -6,9 +6,9 @@
   "public_key_raw_hex": "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a",
   "public_key_spki_base64": "MCowBQYDK2VwAyEA11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo=",
   "payload_file": "entitlement-payload.json",
-  "payload_length": 1255,
-  "payload_sha256_hex": "5e1abab1b23169983d51a3144c0953228068f995ead7196f2e08f3e609dc6c9a",
-  "signature_base64": "YArKCIrjJH2pzUm2vtpUW5qKuARbJ55GdYWTyp+EZtMTTSOVHRaojrLkNOz/jlvEK33vDWJCE8GOOZbcaf9xDw==",
+  "payload_length": 1291,
+  "payload_sha256_hex": "a228cd82b2ff71cb4cfde5edf447cbb17d99e2251448c6cf802a2290b7d7bd36",
+  "signature_base64": "CZD908pqQDl96uo7I64MpRVyvBab8wEox4VeWkWH9RngA6V4anaillz7fS9LX6p8MY05jHKyrAxrUSi6yr9OBg==",
   "credential_file": "entitlement.permit.json",
   "trust_store_file": "trust-store.json"
 }
