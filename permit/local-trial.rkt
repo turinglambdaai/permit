@@ -142,6 +142,11 @@
     (raise-argument-error 'evaluate-local-trial
                           "(or/c #f non-empty-string?)"
                           issuer))
+  (when (and (pair? extensions) (not issuer))
+    (raise-arguments-error 'evaluate-local-trial
+                           "issuer is required when signed trial extensions are supplied"
+                           "extensions"
+                           (length extensions)))
   (unless (exact-nonnegative-integer? rollback-tolerance)
     (raise-argument-error 'evaluate-local-trial
                           "exact-nonnegative-integer?"
