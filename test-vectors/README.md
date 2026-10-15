@@ -14,7 +14,9 @@ A conforming implementation should at minimum:
 8. Reject it with `revoked-trust-store.json`.
 9. Reject it with `next-future-trust-store.json` because its authenticated `issued_at` predates that key's issuance window.
 10. Reject `duplicate-key-alias-trust-store.json`.
-11. Apply the policy cases listed in `conformance.json`.
+11. Reject `activation-only-trust-store.json` when it is used to verify an entitlement.
+12. Reject `duplicate-member-envelope.json` before authorization.
+13. Apply the policy cases listed in `conformance.json`.
 
 JSON canonicalization is intentionally irrelevant. The exact decoded payload bytes are the signed message. Protocol v1 uses canonical padded standard Base64 for the envelope spelling.
 
