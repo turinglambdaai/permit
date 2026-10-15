@@ -6,7 +6,12 @@
          rackunit
          racket/file
          racket/port
-         "../permit/main.rkt")
+         "../permit/credential.rkt"
+         "../permit/crypto.rkt"
+         "../permit/envelope.rkt"
+         "../permit/policy.rkt"
+         "../permit/schema.rkt"
+         "../permit/trust.rkt")
 
 (define (hex->bytes value)
   (define output (make-bytes (/ (string-length value) 2)))
