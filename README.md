@@ -68,7 +68,7 @@ raco permit keygen \
 Keep the private key out of source control and application bundles. Sign the exact bytes of a payload file:
 
 ```bash
-raco permit sign \
+raco permit issue \
   --key private-key.der \
   --key-id license-2026 \
   --payload entitlement.json \
@@ -115,16 +115,18 @@ Ed25519 signs the decoded `payload` bytes **exactly**. A verifier checks the sig
 
 Protocol v1 includes:
 
-- `entitlement`, `trial`, and `activation` credentials
+- `entitlement`, `trial`, `trial-extension`, and `activation` credentials
 - independent `use_expires_at`, `updates_through`, and `features_through` windows
 - optional product-version bounds and installation binding
 - edition, feature, add-on, bundle, and scalar-capability grants
 - team, named-seat, device, and concurrent-seat limits
-- short-lived activation leases with an explicit offline grace period
+- stable `entitlement_id` + monotonic `revision` for renewals and reissues
+- signed absolute-date trial extensions that are replay-safe
+- short-lived activation leases bound to the exact entitlement snapshot, with explicit offline grace
 - multi-key trust stores with `next`, `active`, `retired`, and `revoked` states
 - deterministic cross-language test vectors
 
-Read the [normative Protocol v1 specification](docs/protocol-v1.md) and the [management boundary](docs/management-boundaries.md).
+Start with the [normative Protocol v1 specification](docs/protocol-v1.md), then see [entitlements](docs/entitlement-v1.md), [activation](docs/activation-v1.md), [trust](docs/trust-model.md), [lifecycle](docs/lifecycle.md), [compatibility](docs/compatibility.md), [threat model](docs/threat-model.md), and the [management boundary](docs/management-boundaries.md).
 
 ## Racket API
 
@@ -144,6 +146,8 @@ Read the [normative Protocol v1 specification](docs/protocol-v1.md) and the [man
   (enable-pcap-export!))
 ```
 
+Renewal or a plan change issues a complete new snapshot with the same `entitlement_id`, a higher `revision`, and a new `credential_id`. This is deterministic replacement among credentials the client has actually received; it is not offline revocation.
+
 An online-managed product verifies both the durable right and a short-lived installation lease:
 
 ```racket
@@ -156,7 +160,7 @@ An offline product omits the activation layer entirely.
 
 ## Trust and rotation
 
-Applications ship only public keys. A trust store can stage a `next` key before an issuer starts signing with it, keep an `active` key for normal issuance, retain a `retired` key for credentials issued before a cutoff, and reject a `revoked` key immediately. Issuer constraints and validity windows are checked together with the cryptographic signature.
+Applications ship only public keys. A trust store can stage a `next` key before an issuer starts signing with it, keep an `active` key for normal issuance, retain a `retired` key for credentials issued before its issuance cutoff, and reject a `revoked` key immediately. Key time windows constrain the credential's authenticated `issued_at`, not the future wall-clock moment when a perpetual credential is verified.
 
 This lets a release carry tomorrow's public key before the issuing service switches over, while preserving a deterministic offline verification path.
 
