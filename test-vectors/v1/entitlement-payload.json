@@ -36,7 +36,8 @@
       "capabilities": {
         "team-members": 5,
         "devices": 10
-      }
+      },
+      "feature_policy": "explicit"
     }
   ],
   "constraints": {
