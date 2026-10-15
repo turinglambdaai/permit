@@ -1,8 +1,8 @@
 #lang racket/base
 
-(require json
-         racket/list
+(require racket/list
          "crypto.rkt"
+         "private/json.rkt"
          "private/time.rkt")
 
 (provide (struct-out trust-key)
@@ -35,13 +35,6 @@
 
 (define (nullable-time? value)
   (or (eq? value 'null) (rfc3339-utc? value)))
-
-(define (read-complete-json who in)
-  (define value (read-json in))
-  (define trailing (read-json in))
-  (unless (eof-object? trailing)
-    (raise-arguments-error who "input must contain exactly one JSON value"))
-  value)
 
 (define (jsexpr->trust-store value)
   (define who 'jsexpr->trust-store)
@@ -123,14 +116,7 @@
   (trust-store issuer keys))
 
 (define (read-trust-store source)
-  (define value
-    (cond
-      [(input-port? source) (read-complete-json 'read-trust-store source)]
-      [(path-string? source)
-       (call-with-input-file source
-         (lambda (in) (read-complete-json 'read-trust-store in)))]
-      [else (raise-argument-error 'read-trust-store "(or/c input-port? path-string?)" source)]))
-  (jsexpr->trust-store value))
+  (jsexpr->trust-store (read-json-source/strict 'read-trust-store source)))
 
 (define (trust-store-key store key-id)
   (unless (trust-store? store)
