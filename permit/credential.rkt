@@ -75,11 +75,16 @@
                              "type"
                              (verified-credential-type credential))))
   (define entitlement-id (verified-credential-entitlement-id (car credentials)))
+  (define issuer (hash-ref (verified-credential-claims (car credentials)) 'issuer))
   (unless (andmap (lambda (credential)
-                    (equal? (verified-credential-entitlement-id credential) entitlement-id))
+                    (and (equal? (verified-credential-entitlement-id credential) entitlement-id)
+                         (equal? (hash-ref (verified-credential-claims credential) 'issuer)
+                                 issuer)))
                   credentials)
     (raise-arguments-error 'select-latest-entitlement
                            "credentials belong to different entitlement lineages"
+                           "issuer"
+                           issuer
                            "entitlement_ids"
                            (map verified-credential-entitlement-id credentials)))
   (define highest
