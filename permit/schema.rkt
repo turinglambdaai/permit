@@ -231,8 +231,8 @@
   (expect who
           non-empty-string?
           "non-empty string"
-          (hash-ref claims 'entitlement_id #f)
-          "entitlement_id")
+          (hash-ref claims 'trial_id #f)
+          "trial_id")
   (expect who
           rfc3339-utc?
           "canonical UTC timestamp"
