@@ -6,6 +6,7 @@
 (provide rfc3339-utc?
          rfc3339<=?
          rfc3339->seconds
+         seconds->rfc3339
          current-rfc3339)
 
 (define timestamp-rx
