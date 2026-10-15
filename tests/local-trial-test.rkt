@@ -3,7 +3,9 @@
 (require json
          rackunit
          racket/port
-         "../permit/main.rkt")
+         "../permit/main.rkt"
+         "../permit/crypto.rkt"
+         "../permit/envelope.rkt")
 
 (define start "2026-01-01T00:00:00Z")
 (define trial
