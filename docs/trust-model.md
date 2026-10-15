@@ -16,6 +16,7 @@ A v1 trust store is:
       "algorithm": "Ed25519",
       "public_key": "<Base64 SubjectPublicKeyInfo DER>",
       "status": "active",
+      "purposes": ["entitlement", "trial", "trial-extension"],
       "not_before": "2027-01-01T00:00:00Z",
       "not_after": null
     }
@@ -31,6 +32,14 @@ The trust store is application configuration delivered through the application's
 - `active` — normal issuance key;
 - `retired` — no new issuance intended, but old credentials remain authentic; it MUST have a non-null `not_after` issuance cutoff;
 - `revoked` — compromise or explicit distrust; all credentials under this key fail verification.
+
+## Key purposes
+
+Each key declares a non-empty `purposes` list drawn from the Protocol v1 credential types: `entitlement`, `trial`, `trial-extension`, and `activation`.
+
+A verifier authenticates the exact payload first, then rejects it if its signed `type` is not allowed by the selected key. This lets a product keep long-lived offline entitlement issuance on one key while an online activation service holds a separate lease-only key. Compromise of the activation signer then cannot mint a perpetual entitlement accepted by a conforming client.
+
+A small independent product MAY initially use one key for all purposes, but production systems SHOULD split online and offline signing roles once the operational complexity is justified.
 
 ## Issuance window
 
@@ -65,7 +74,7 @@ Revocation of an embedded public key requires the application to receive updated
 
 ## Key separation
 
-Permit credential-signing keys SHOULD be distinct from:
+Permit signing roles SHOULD be separated by purpose where practical. In addition, Permit credential-signing keys SHOULD be distinct from:
 
 - application update-feed signing keys;
 - platform code-signing certificates;
