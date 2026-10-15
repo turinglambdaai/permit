@@ -15,6 +15,8 @@
 (define revoked-trust-path (build-path vector-root "revoked-trust-store.json"))
 (define next-future-trust-path (build-path vector-root "next-future-trust-store.json"))
 (define duplicate-key-trust-path (build-path vector-root "duplicate-key-alias-trust-store.json"))
+(define activation-only-trust-path (build-path vector-root "activation-only-trust-store.json"))
+(define duplicate-member-envelope-path (build-path vector-root "duplicate-member-envelope.json"))
 
 (define credential
   (verify-credential credential-path (read-trust-store trust-path)))
@@ -70,5 +72,11 @@
 (check-exn #rx"same public key"
            (lambda ()
              (read-trust-store duplicate-key-trust-path)))
+(check-exn #rx"not authorized for credential type"
+           (lambda ()
+             (verify-credential credential-path (read-trust-store activation-only-trust-path))))
+(check-exn #rx"duplicate JSON object member"
+           (lambda ()
+             (read-envelope duplicate-member-envelope-path)))
 
 (check-false (version-allowed? credential "4.0.0"))
