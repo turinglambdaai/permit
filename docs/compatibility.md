@@ -41,3 +41,8 @@ Permit's Racket package may evolve during 0.x, but the project should prefer add
 ## Cross-language conformance
 
 The corpus under `test-vectors/v1/` is part of the interoperability contract. Other implementations should verify the exact payload bytes, signature, trust rules, and positive/negative policy cases before claiming Protocol v1 compatibility.
+
+
+## Missing evaluation context
+
+Cross-language policy engines must fail closed when a signed constraint cannot be evaluated because required product metadata was omitted. In particular, a constrained `version_policy` is not treated as unconstrained when no version is supplied, and a finite `features_through` window does not authorize a feature without its introduction timestamp.
