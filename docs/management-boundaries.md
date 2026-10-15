@@ -6,9 +6,9 @@ Permit v0.1 implements the protocol, offline verifier, local policy engine, and 
 
 - Credential schema and exact-payload Ed25519 signatures
 - Issuer tooling for local/offline issuance
-- Entitlement, trial, and activation-lease verification
+- Entitlement, signed trial, signed trial-extension, and activation-lease verification
 - Local evaluation of products, bundles, editions, features, add-ons, windows, versions, and installations
-- Trust stores and key rotation
+- Trust stores, issuance-window key rotation, entitlement lineage, and revision selection
 
 ## Future management plane
 
@@ -34,3 +34,7 @@ That service should output signed Permit credentials. It must not become a requi
 - Hardware dongle drivers and platform secure-storage implementations
 
 Products choose whether to use Permit. Rivet and Glaze remain application frameworks and do not depend on it.
+
+## Replacement versus revocation
+
+A newer entitlement revision replaces an older revision only among credentials a client has actually received. It does not make hidden offline copies disappear. Products requiring timely downgrade, refund revocation, or seat reclamation must opt into a management mechanism such as short-lived activation leases or future signed revocation state.
