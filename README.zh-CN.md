@@ -118,12 +118,12 @@ Protocol v1 包含：
 - `entitlement`、`trial`、`trial-extension`、`activation` 四种凭证
 - 相互独立的 `use_expires_at`、`updates_through`、`features_through` 窗口
 - 可选的产品版本范围与安装实例绑定
-- 版本、功能、附加项、套餐和标量能力授权
+- 版本、显式功能、按发布时间自动解锁未来功能、附加项、套餐和标量能力授权
 - 团队、实名席位、设备数和并发席位限制
 - 用稳定 `entitlement_id` + 单调 `revision` 表达续费、重签和方案变更
 - 使用绝对截止时间、可安全重复导入的签名试用延期
 - 绑定到精确 entitlement 快照并带明确离线宽限期的短期激活租约
-- 支持 `next`、`active`、`retired`、`revoked` 状态的多密钥信任库
+- 支持 `next`、`active`、`retired`、`revoked` 状态并限制每把密钥签名用途的多密钥信任库
 - 确定性的跨语言测试向量
 
 从[规范性的 Protocol v1 文档](docs/protocol-v1.md)开始，再查看[权益模型](docs/entitlement-v1.md)、[激活租约](docs/activation-v1.md)、[信任模型](docs/trust-model.md)、[生命周期](docs/lifecycle.md)、[兼容规则](docs/compatibility.md)、[威胁模型](docs/threat-model.md)和[管理边界](docs/management-boundaries.md)。
