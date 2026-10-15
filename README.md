@@ -71,6 +71,7 @@ Keep the private key out of source control and application bundles. Start from a
 raco permit issue \
   --key private-key.der \
   --key-id license-2026 \
+  --trust-store trust-store.json \
   --payload entitlement.json \
   --output entitlement.permit.json
 ```
@@ -127,6 +128,21 @@ Protocol v1 includes:
 - deterministic cross-language test vectors
 
 Start with the [normative Protocol v1 specification](docs/protocol-v1.md), then see [entitlements](docs/entitlement-v1.md), [activation](docs/activation-v1.md), [trust](docs/trust-model.md), [lifecycle](docs/lifecycle.md), [compatibility](docs/compatibility.md), [threat model](docs/threat-model.md), and the [management boundary](docs/management-boundaries.md).
+
+## Client and issuer APIs
+
+The default `(require permit)` facade is intentionally client-only: verification, trust-store loading, policy evaluation, installation identity, and local-trial runtime. It does not export private-key generation, signing, raw envelope constructors, or raw schema parsing.
+
+Issuer-side code opts in explicitly:
+
+```racket
+(require permit/issuer)
+
+(define envelope
+  (issue-credential payload-bytes private-key "license-2026" trust-store))
+```
+
+`issue-credential` is the safe path: it checks schema, issuer, active key status, credential-purpose authorization, signing-key issuance window, and that the supplied private key matches the selected trust-store public key. The CLI `raco permit issue` uses the same path. `raco permit sign` remains a deliberately low-level escape hatch.
 
 ## Racket API
 
