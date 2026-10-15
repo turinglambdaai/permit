@@ -56,6 +56,7 @@
   (define key-values (hash-ref value 'keys #f))
   (unless (and (hash? key-values) (positive? (hash-count key-values)))
     (raise-arguments-error who "keys must be a non-empty JSON object" "value" key-values))
+  (define seen-public-keys (make-hash))
   (define keys
     (for/hash ([(raw-id entry) (in-hash key-values)])
       (unless (symbol? raw-id)
@@ -74,6 +75,18 @@
       (define status (hash-ref entry 'status #f))
       (unless (member status allowed-statuses)
         (raise-arguments-error who "invalid key status" "key_id" id "status" status))
+      (define public-key-text (hash-ref entry 'public_key #f))
+      (unless (and (string? public-key-text) (positive? (string-length public-key-text)))
+        (raise-arguments-error who "invalid public_key" "key_id" id "value" public-key-text))
+      (define prior-id (hash-ref seen-public-keys public-key-text #f))
+      (when prior-id
+        (raise-arguments-error who
+                               "the same public key must not appear under multiple key ids"
+                               "key_id"
+                               id
+                               "previous_key_id"
+                               prior-id))
+      (hash-set! seen-public-keys public-key-text id)
       (define not-before (hash-ref entry 'not_before #f))
       (define not-after (hash-ref entry 'not_after #f))
       (unless (nullable-time? not-before)
@@ -91,9 +104,19 @@
                                not-before
                                "not_after"
                                not-after))
+      (when (and (equal? status "next") (eq? not-before 'null))
+        (raise-arguments-error who
+                               "next key requires a not_before issuance boundary"
+                               "key_id"
+                               id))
+      (when (and (equal? status "retired") (eq? not-after 'null))
+        (raise-arguments-error who
+                               "retired key requires a not_after issuance boundary"
+                               "key_id"
+                               id))
       (values id
               (trust-key id
-                         (base64->public-key (hash-ref entry 'public_key #f))
+                         (base64->public-key public-key-text)
                          status
                          not-before
                          not-after))))
