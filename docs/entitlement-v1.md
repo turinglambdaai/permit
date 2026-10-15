@@ -164,3 +164,14 @@ Applications may select the highest revision they have received. They must not c
 The standard `named_seats`, `device_activations`, and `concurrent_seats` limits apply to the logical entitlement as a whole. This is deliberate: a bundle sold under one commercial right normally shares its seat pool.
 
 If two products need independently administered seat pools or different lifecycle windows, issue separate entitlements. Do not overload one credential with ambiguous per-product allocation semantics.
+
+
+## Required policy context
+
+A signed constraint is never silently ignored because the caller omitted evaluation metadata:
+
+- if `features_through` is finite, feature authorization requires the feature introduction timestamp;
+- if `version_policy.min` or `max` is set, version-sensitive authorization requires the current/target SemVer;
+- update authorization always requires the release publication timestamp.
+
+Missing required context fails closed rather than widening the grant.
