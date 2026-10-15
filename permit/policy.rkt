@@ -197,7 +197,9 @@
   (and (base-policy-ok? credential at installation-id activation version trial-extensions)
        (window-allows? credential 'features_through published-at)
        (for/or ([grant (in-list (matching-grants credential product product-family))])
-         (member feature (hash-ref grant 'features)))
+         (define features (hash-ref grant 'features))
+         (or (member feature features)
+             (member "*" features)))
        #t))
 
 (define (addon-entitled? credential
