@@ -150,7 +150,7 @@
           "trial-extension"
           'credential_id
           credential-id
-          'entitlement_id
+          'trial_id
           entitlement-id
           'issuer
           "example.test"
