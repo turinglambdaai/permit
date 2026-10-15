@@ -62,10 +62,11 @@ raco permit keygen \
   --public public-key.der \
   --trust-store trust-store.json \
   --key-id license-2026 \
-  --issuer com.example
+  --issuer com.example \
+  --purpose entitlement
 ```
 
-私钥不能进入源码仓库或应用包。可以先从 [`examples/`](examples/) 中选择一份已通过 schema 校验的商业模型模板，再对 payload 文件的原始字节签名：
+`--purpose` 可以重复传入，用于生成最小权限签名 key；只有确实要让同一把 key 签全部 v1 凭证的小型部署才应省略。私钥不能进入源码仓库或应用包。可以先从 [`examples/`](examples/) 中选择一份已通过 schema 校验的商业模型模板，再对 payload 文件的原始字节签名：
 
 ```bash
 raco permit issue \
