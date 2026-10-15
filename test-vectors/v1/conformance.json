@@ -44,6 +44,17 @@
       "expected": "trust-store-reject"
     },
     {
+      "name": "credential-purpose-isolation",
+      "credential": "entitlement.permit.json",
+      "trust_store": "activation-only-trust-store.json",
+      "expected": "key-purpose-reject"
+    },
+    {
+      "name": "duplicate-envelope-member",
+      "credential": "duplicate-member-envelope.json",
+      "expected": "duplicate-json-reject"
+    },
+    {
       "name": "maintenance-cutoff-inclusive",
       "credential": "entitlement.permit.json",
       "trust_store": "trust-store.json",
