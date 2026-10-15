@@ -102,6 +102,12 @@
              "2026-01-01T00:01:00Z"
              "2026-01-01T00:10:00Z"))
 
+(check-exn #rx"issuer is required"
+           (lambda ()
+             (evaluate-local-trial trial
+                                   #:at "2026-01-01T00:03:00Z"
+                                   #:extensions (list good-extension))))
+
 (define extended
   (evaluate-local-trial trial
                         #:at "2026-01-01T00:03:00Z"
