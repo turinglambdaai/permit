@@ -9,6 +9,12 @@
 (define payload-path (build-path vector-root "entitlement-payload.json"))
 (define credential-path (build-path vector-root "entitlement.permit.json"))
 (define trust-path (build-path vector-root "trust-store.json"))
+(define tampered-path (build-path vector-root "tampered-payload.permit.json"))
+(define unknown-key-path (build-path vector-root "unknown-key.permit.json"))
+(define retired-trust-path (build-path vector-root "retired-trust-store.json"))
+(define revoked-trust-path (build-path vector-root "revoked-trust-store.json"))
+(define next-future-trust-path (build-path vector-root "next-future-trust-store.json"))
+(define duplicate-key-trust-path (build-path vector-root "duplicate-key-alias-trust-store.json"))
 
 (define credential
   (verify-credential credential-path (read-trust-store trust-path)))
@@ -41,3 +47,28 @@
   (trust-key-public-key
    (trust-store-key (read-trust-store trust-path)
                     (permit-envelope-key-id envelope)))))
+
+
+;; Static fail-closed corpus for other language implementations.
+(check-exn #rx"invalid Ed25519 signature"
+           (lambda ()
+             (verify-credential tampered-path (read-trust-store trust-path))))
+(check-exn #rx"unknown key_id"
+           (lambda ()
+             (verify-credential unknown-key-path (read-trust-store trust-path))))
+
+(define retired-credential
+  (verify-credential credential-path (read-trust-store retired-trust-path)))
+(check-equal? (verified-credential-id retired-credential) "cred_vector_01")
+
+(check-exn #rx"revoked"
+           (lambda ()
+             (verify-credential credential-path (read-trust-store revoked-trust-path))))
+(check-exn #rx"issuance window"
+           (lambda ()
+             (verify-credential credential-path (read-trust-store next-future-trust-path))))
+(check-exn #rx"same public key"
+           (lambda ()
+             (read-trust-store duplicate-key-trust-path)))
+
+(check-false (version-allowed? credential "4.0.0"))
