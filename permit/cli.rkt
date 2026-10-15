@@ -34,6 +34,8 @@
   (define trust-path #f)
   (define key-id #f)
   (define issuer #f)
+  (define purposes '())
+  (define allowed-purposes '("entitlement" "trial" "trial-extension" "activation"))
   (parameterize ([current-command-line-arguments (list->vector args)])
     (command-line #:program "raco permit keygen"
                   #:once-each
@@ -41,12 +43,25 @@
                   [("--public") path "Public key output (SPKI DER)" (set! public-path path)]
                   [("--trust-store") path "Optional trust-store JSON output" (set! trust-path path)]
                   [("--key-id") value "Key identifier for trust store" (set! key-id value)]
-                  [("--issuer") value "Issuer for trust store" (set! issuer value)]))
+                  [("--issuer") value "Issuer for trust store" (set! issuer value)]
+                  #:multi
+                  [("--purpose")
+                   value
+                   "Allowed credential type; repeat for least-privilege keys"
+                   (unless (member value allowed-purposes)
+                     (die (format "unknown key purpose ~a; expected one of ~a"
+                                  value
+                                  allowed-purposes)))
+                   (set! purposes (cons value purposes))]))
   (require-option 'keygen "--private" private-path)
   (require-option 'keygen "--public" public-path)
   (when trust-path
     (require-option 'keygen "--key-id" key-id)
     (require-option 'keygen "--issuer" issuer))
+  (define effective-purposes
+    (if (null? purposes)
+        allowed-purposes
+        (reverse (remove-duplicates purposes string=?))))
   (define-values (private-key public-key) (generate-ed25519-keypair))
   (call-with-output-file private-path
                          (lambda (out) (write-bytes (ed25519-private-key->der private-key) out))
@@ -80,7 +95,10 @@
                             'null))))
     (call-with-output-file trust-path (lambda (out) (write-json-line store out)) #:exists 'error))
   (write-json-line
-   (hasheq 'private_key private-path 'public_key public-path 'trust_store (or trust-path 'null))))
+   (hasheq 'private_key private-path
+           'public_key public-path
+           'trust_store (or trust-path 'null)
+           'purposes effective-purposes)))
 
 (define (issue-command args)
   (define key-path #f)
