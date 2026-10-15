@@ -30,7 +30,7 @@ Permit 与应用框架并列组合：
               运行时 / 更新     产品权益
 ```
 
-Rivet 和 Glaze 都不依赖 Permit。更新制品签名与 Permit 凭证签名也始终使用不同的密钥和信任策略。
+Rivet 和 Glaze 都不依赖 Permit。更新制品签名与 Permit 凭证签名也始终使用不同的密钥和信任策略。长期依赖方向和职责分工见[框架集成契约](docs/framework-integration.md)。
 
 ## 可表达的产品模型
 
@@ -128,7 +128,7 @@ Protocol v1 包含：
 - 支持 `next`、`active`、`retired`、`revoked` 状态并限制每把密钥签名用途的多密钥信任库
 - 确定性的跨语言测试向量
 
-从[规范性的 Protocol v1 文档](docs/protocol-v1.md)开始，再查看[权益模型](docs/entitlement-v1.md)、[激活租约](docs/activation-v1.md)、[信任模型](docs/trust-model.md)、[生命周期](docs/lifecycle.md)、[兼容规则](docs/compatibility.md)、[威胁模型](docs/threat-model.md)和[管理边界](docs/management-boundaries.md)。
+从[规范性的 Protocol v1 文档](docs/protocol-v1.md)开始，再查看[权益模型](docs/entitlement-v1.md)、[激活租约](docs/activation-v1.md)、[信任模型](docs/trust-model.md)、[生命周期](docs/lifecycle.md)、[兼容规则](docs/compatibility.md)、[威胁模型](docs/threat-model.md)、[框架集成契约](docs/framework-integration.md)和[管理边界](docs/management-boundaries.md)。
 
 ## 客户端与签发端 API
 
