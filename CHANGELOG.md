@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Added
+
+- Add privacy-preserving random installation/trial identifiers.
+- Add a storage-agnostic local trial state machine with clock high-water tracking and signed trial-extension support.
+
+### Security
+
+- Seal the `verified-credential` constructor so product policy can only receive credentials produced by signature verification.
+
 ### Protocol v1 hardening
 
 - Separate logical `entitlement_id` from unique signed `credential_id` and add monotonic revisions.
