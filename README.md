@@ -62,10 +62,11 @@ raco permit keygen \
   --public public-key.der \
   --trust-store trust-store.json \
   --key-id license-2026 \
-  --issuer com.example
+  --issuer com.example \
+  --purpose entitlement
 ```
 
-Keep the private key out of source control and application bundles. Start from a schema-valid template under [`examples/`](examples/), then sign the exact bytes of the payload file:
+`--purpose` may be repeated to create a least-privilege signing key. Omit it only when one small deployment intentionally uses a single key for every v1 credential type. Keep the private key out of source control and application bundles. Start from a schema-valid template under [`examples/`](examples/), then sign the exact bytes of the payload file:
 
 ```bash
 raco permit issue \
