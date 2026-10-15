@@ -5,7 +5,10 @@
          "schema.rkt"
          "trust.rkt")
 
-(provide (struct-out verified-credential)
+(provide verified-credential?
+         verified-credential-claims
+         verified-credential-payload
+         verified-credential-key-id
          verify-credential
          verified-credential-type
          verified-credential-id
