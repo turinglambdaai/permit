@@ -8,8 +8,8 @@
 - Bind activation leases to an exact entitlement id, revision, credential id, and installation id.
 - Add replay-safe signed trial-extension credentials.
 - Make key validity windows constrain authenticated issuance time so retired keys do not expire perpetual rights.
-- Harden SemVer, Base64, trust-store aliases, scalar capability conflicts, and strict JSON parsing.
-- Add add-on and standard-limit policy queries plus split normative protocol documentation.
+- Harden SemVer, Base64, recursive duplicate-key JSON rejection, trust-store aliases, per-key credential purposes, scalar capability conflicts, and strict JSON parsing.
+- Add explicit vs published-through feature grant modes, add-on and standard-limit policy queries, plus split normative protocol documentation.
 
 ## 0.1.0 - 2026-10-15
 
