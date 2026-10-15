@@ -52,7 +52,7 @@
   (and (equal? (hash-ref trial-claims 'type #f) "trial")
        (trial-extension-claims? extension-claims)
        (time-active? extension-claims at)
-       (equal? (hash-ref extension-claims 'entitlement_id)
+       (equal? (hash-ref extension-claims 'trial_id)
                (hash-ref trial-claims 'entitlement_id))))
 
 (define (later-time left right)
