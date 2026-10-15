@@ -71,6 +71,8 @@
                             (public-key->base64 public-key)
                             'status
                             "active"
+                            'purposes
+                            '("entitlement" "trial" "trial-extension" "activation")
                             'not_before
                             'null
                             'not_after
