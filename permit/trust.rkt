@@ -9,7 +9,9 @@
          (struct-out trust-store)
          jsexpr->trust-store
          read-trust-store
-         trust-store-key)
+         trust-store-key
+         trust-key-valid-for-issued-at?
+         trust-key-authorize-issued-at!)
 
 (struct trust-key (id public-key status not-before not-after) #:transparent)
 (struct trust-store (issuer keys) #:transparent)
@@ -22,16 +24,24 @@
   (unless (hash? value)
     (raise-arguments-error who (string-append label " must be a JSON object") "value" value))
   (define actual (sort (hash-keys value) symbol<?))
-  (unless (equal? actual expected)
+  (define wanted (sort expected symbol<?))
+  (unless (equal? actual wanted)
     (raise-arguments-error who
                            (string-append "unexpected " label " fields")
                            "expected"
-                           expected
+                           wanted
                            "actual"
                            actual)))
 
 (define (nullable-time? value)
   (or (eq? value 'null) (rfc3339-utc? value)))
+
+(define (read-complete-json who in)
+  (define value (read-json in))
+  (define trailing (read-json in))
+  (unless (eof-object? trailing)
+    (raise-arguments-error who "input must contain exactly one JSON value"))
+  value)
 
 (define (jsexpr->trust-store value)
   (define who 'jsexpr->trust-store)
@@ -44,11 +54,15 @@
   (unless (and (string? issuer) (positive? (string-length issuer)))
     (raise-arguments-error who "invalid issuer" "value" issuer))
   (define key-values (hash-ref value 'keys #f))
-  (unless (hash? key-values)
-    (raise-arguments-error who "keys must be a JSON object" "value" key-values))
+  (unless (and (hash? key-values) (positive? (hash-count key-values)))
+    (raise-arguments-error who "keys must be a non-empty JSON object" "value" key-values))
   (define keys
     (for/hash ([(raw-id entry) (in-hash key-values)])
+      (unless (symbol? raw-id)
+        (raise-arguments-error who "trust-store key ids must be JSON object keys" "key_id" raw-id))
       (define id (symbol->string raw-id))
+      (unless (positive? (string-length id))
+        (raise-arguments-error who "key_id must be non-empty" "key_id" id))
       (exact-fields! who entry key-fields "trust key")
       (unless (equal? (hash-ref entry 'algorithm #f) "Ed25519")
         (raise-arguments-error who
@@ -66,6 +80,17 @@
         (raise-arguments-error who "invalid key not_before" "key_id" id "value" not-before))
       (unless (nullable-time? not-after)
         (raise-arguments-error who "invalid key not_after" "key_id" id "value" not-after))
+      (when (and (not (eq? not-before 'null))
+                 (not (eq? not-after 'null))
+                 (not (rfc3339<=? not-before not-after)))
+        (raise-arguments-error who
+                               "trust-key not_before must not exceed not_after"
+                               "key_id"
+                               id
+                               "not_before"
+                               not-before
+                               "not_after"
+                               not-after))
       (values id
               (trust-key id
                          (base64->public-key (hash-ref entry 'public_key #f))
@@ -77,35 +102,50 @@
 (define (read-trust-store source)
   (define value
     (cond
-      [(input-port? source) (read-json source)]
-      [(path-string? source) (call-with-input-file source read-json)]
+      [(input-port? source) (read-complete-json 'read-trust-store source)]
+      [(path-string? source)
+       (call-with-input-file source
+         (lambda (in) (read-complete-json 'read-trust-store in)))]
       [else (raise-argument-error 'read-trust-store "(or/c input-port? path-string?)" source)]))
   (jsexpr->trust-store value))
 
-(define (trust-store-key store key-id #:at [at (current-rfc3339)])
+(define (trust-store-key store key-id)
   (unless (trust-store? store)
     (raise-argument-error 'trust-store-key "trust-store?" store))
-  (unless (rfc3339-utc? at)
-    (raise-argument-error 'trust-store-key "canonical RFC 3339 UTC timestamp" at))
+  (unless (and (string? key-id) (positive? (string-length key-id)))
+    (raise-argument-error 'trust-store-key "non-empty string?" key-id))
   (define key (hash-ref (trust-store-keys store) key-id #f))
   (unless key
     (raise-arguments-error 'trust-store-key "unknown key_id" "key_id" key-id))
   (when (equal? (trust-key-status key) "revoked")
     (raise-arguments-error 'trust-store-key "signing key is revoked" "key_id" key-id))
+  key)
+
+;; Key windows constrain when a credential may have been signed, not when a
+;; client happens to verify it. Otherwise a perpetual entitlement would stop
+;; verifying when an old signing key reaches its issuance cutoff.
+(define (trust-key-valid-for-issued-at? key issued-at)
+  (unless (trust-key? key)
+    (raise-argument-error 'trust-key-valid-for-issued-at? "trust-key?" key))
+  (unless (rfc3339-utc? issued-at)
+    (raise-argument-error 'trust-key-valid-for-issued-at?
+                          "canonical RFC 3339 UTC timestamp"
+                          issued-at))
   (define not-before (trust-key-not-before key))
   (define not-after (trust-key-not-after key))
-  (when (and (not (eq? not-before 'null)) (not (rfc3339<=? not-before at)))
-    (raise-arguments-error 'trust-store-key
-                           "signing key is not active yet"
+  (and (or (eq? not-before 'null) (rfc3339<=? not-before issued-at))
+       (or (eq? not-after 'null) (rfc3339<=? issued-at not-after))))
+
+(define (trust-key-authorize-issued-at! key issued-at)
+  (unless (trust-key-valid-for-issued-at? key issued-at)
+    (raise-arguments-error 'verify-credential
+                           "credential issued_at falls outside signing-key issuance window"
                            "key_id"
-                           key-id
-                           "not_before"
-                           not-before))
-  (when (and (not (eq? not-after 'null)) (not (rfc3339<=? at not-after)))
-    (raise-arguments-error 'trust-store-key
-                           "signing key is no longer trusted"
-                           "key_id"
-                           key-id
-                           "not_after"
-                           not-after))
+                           (trust-key-id key)
+                           "issued_at"
+                           issued-at
+                           "key_not_before"
+                           (trust-key-not-before key)
+                           "key_not_after"
+                           (trust-key-not-after key)))
   key)
