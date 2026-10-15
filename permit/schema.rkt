@@ -97,12 +97,16 @@
     (fail who "scope must name a product or product family" "scope" value)))
 
 (define (scalar-capability? value)
-  (or (string? value) (boolean? value) (exact-integer? value) (real? value)))
+  (or (string? value) (boolean? value) (rational? value)))
 
 (define (validate-grant who value)
   (exact-fields! who value grant-fields "grant")
   (validate-scope who (hash-ref value 'scope #f))
-  (expect who non-empty-string? "non-empty string" (hash-ref value 'edition #f) "grant.edition")
+  (expect who
+          (nullable non-empty-string?)
+          "non-empty string or null"
+          (hash-ref value 'edition #f)
+          "grant.edition")
   (expect who
           unique-string-list?
           "list of unique non-empty strings"
