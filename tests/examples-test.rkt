@@ -3,7 +3,7 @@
 (require rackunit
          racket/file
          racket/runtime-path
-         "../permit/main.rkt")
+         "../permit/schema.rkt")
 
 (define-runtime-path examples-root "../examples")
 

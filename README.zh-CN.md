@@ -71,6 +71,7 @@ raco permit keygen \
 raco permit issue \
   --key private-key.der \
   --key-id license-2026 \
+  --trust-store trust-store.json \
   --payload entitlement.json \
   --output entitlement.permit.json
 ```
@@ -128,6 +129,21 @@ Protocol v1 包含：
 
 从[规范性的 Protocol v1 文档](docs/protocol-v1.md)开始，再查看[权益模型](docs/entitlement-v1.md)、[激活租约](docs/activation-v1.md)、[信任模型](docs/trust-model.md)、[生命周期](docs/lifecycle.md)、[兼容规则](docs/compatibility.md)、[威胁模型](docs/threat-model.md)和[管理边界](docs/management-boundaries.md)。
 
+## 客户端与签发端 API
+
+默认的 `(require permit)` 有意保持为客户端 API：只包含验签、信任库读取、策略判断、安装标识和本地 Trial runtime，不导出私钥生成、签名、原始 envelope 构造或 raw schema parser。
+
+签发端显式使用：
+
+```racket
+(require permit/issuer)
+
+(define envelope
+  (issue-credential payload-bytes private-key "license-2026" trust-store))
+```
+
+`issue-credential` 是推荐的安全签发路径：它会检查 schema、issuer、密钥必须处于 active 状态、credential type 是否在 key purposes 中、`issued_at` 是否落在签发窗口内，以及私钥是否真的对应信任库中的公钥。CLI 的 `raco permit issue` 走同一条路径；`raco permit sign` 仅保留为明确的低层逃生口。
+
 ## Racket API
 
 ```racket
@@ -157,6 +173,22 @@ Protocol v1 包含：
 ```
 
 纯离线产品完全可以省略 activation 层。
+
+## 本地首次试用
+
+应用第一次运行、尚未联系签发端时，不可能拥有一份针对这个安装实例唯一签名的 Trial。因此 Permit 不把这种状态硬塞进 Protocol v1，而提供一个很小的、与存储实现无关的本地 Trial 状态机：
+
+```racket
+(define trial
+  (make-local-trial #:duration-seconds (* 14 24 60 60)))
+
+(define result (evaluate-local-trial trial))
+(save-local-state! (local-trial-evaluation-state result))
+```
+
+状态使用随机 trial id 与 `last_seen_at` 时钟高水位，也可以消费已经验签的 Protocol v1 `trial-extension`。这只是合理的防误重置能力，不声称能阻止完全控制本机的用户删除或回滚状态。
+
+需要 activation 的产品可用 `generate-installation-id` 生成同样隐私友好的随机安装标识。详见[本地 Trial 与安装标识](docs/local-trials.md)。
 
 ## 信任与密钥轮换
 

@@ -9,6 +9,7 @@
          read-ed25519-private-key
          read-ed25519-public-key
          ed25519-private-key->der
+         ed25519-private-key->public-key
          ed25519-public-key->der
          ed25519-sign
          ed25519-verify
@@ -64,6 +65,10 @@
 
 (define (ed25519-private-key->der key)
   (pk-key->datum (ensure-key 'ed25519-private-key->der key #t) 'PrivateKeyInfo))
+
+(define (ed25519-private-key->public-key key)
+  (pk-key->public-only-key
+   (ensure-key 'ed25519-private-key->public-key key #t)))
 
 (define (ed25519-public-key->der key)
   (pk-key->datum (ensure-key 'ed25519-public-key->der key #f) 'SubjectPublicKeyInfo))

@@ -2,17 +2,17 @@
 
 ## Scope
 
-Permit is a framework-neutral commercial-entitlement protocol and Racket reference implementation. Keep its dependency direction independent: products may use Permit beside Rivet or Glaze; Rivet and Glaze must not depend on Permit.
+Permit is a framework-neutral commercial-entitlement protocol and Racket reference implementation. The default `permit` facade is client-only; issuer operations live under `permit/issuer`. Keep its dependency direction independent: products may use Permit beside Rivet or Glaze; Rivet and Glaze must not depend on Permit.
 
 ## Invariants
 
 - Ed25519 signs the exact decoded payload bytes. Never replace this with “parse then canonicalize”.
-- Verify the signature and trust key before parsing claims for authorization.
+- Verify the signature and trust key before parsing claims for authorization. The `verified-credential` constructor is intentionally private; never export a public path that lets product code manufacture one. Do not re-export issuer/raw-wire helpers from the default `permit` facade.
 - Security-critical fields are strict and fail closed. Duplicate JSON object members are rejected recursively; new vendor data belongs under `extensions`.
 - `use_expires_at`, `updates_through`, and `features_through` have independent meanings. Feature grants use explicit `feature_policy` values rather than wildcard IDs.
 - `credential_id` identifies one signed statement; `entitlement_id` + monotonic `revision` identify one logical right across reissues. Revision is not revocation.
 - Entitlements are long-lived commercial rights; activation credentials are short-lived leases bound to the exact entitlement id/revision/credential snapshot.
-- `installation_id` is application-generated and privacy-preserving, not hardware fingerprinting.
+- `installation_id` is application-generated and privacy-preserving, not hardware fingerprinting. Local first-run trial state is non-protocol, storage-agnostic, and explicitly not tamper-proof.
 - Seat, device, and concurrent limits remain distinct.
 - Signing-key time windows constrain authenticated `issued_at`, not client verification wall-clock time; retired keys must preserve valid perpetual credentials.
 - Trust stores must not alias one public key under multiple key ids, and each key explicitly limits the credential types it may sign.

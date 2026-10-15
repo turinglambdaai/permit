@@ -3,7 +3,10 @@
 (require rackunit
          racket/file
          racket/runtime-path
-         "../permit/main.rkt")
+         "../permit/credential.rkt"
+         "../permit/envelope.rkt"
+         "../permit/policy.rkt"
+         "../permit/trust.rkt")
 
 (define-runtime-path vector-root "../test-vectors/v1")
 (define payload-path (build-path vector-root "entitlement-payload.json"))
