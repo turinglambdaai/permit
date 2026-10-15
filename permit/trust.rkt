@@ -11,14 +11,16 @@
          read-trust-store
          trust-store-key
          trust-key-valid-for-issued-at?
-         trust-key-authorize-issued-at!)
+         trust-key-authorize-issued-at!
+         trust-key-authorize-type!)
 
-(struct trust-key (id public-key status not-before not-after) #:transparent)
+(struct trust-key (id public-key status not-before not-after purposes) #:transparent)
 (struct trust-store (issuer keys) #:transparent)
 
 (define top-fields '(issuer keys protocol version))
-(define key-fields '(algorithm not_after not_before public_key status))
+(define key-fields '(algorithm not_after not_before public_key purposes status))
 (define allowed-statuses '("active" "next" "retired" "revoked"))
+(define allowed-purposes '("entitlement" "trial" "trial-extension" "activation"))
 
 (define (exact-fields! who value expected label)
   (unless (hash? value)
@@ -80,6 +82,20 @@
                                "previous_key_id"
                                prior-id))
       (hash-set! seen-public-keys public-key-text id)
+      (define purposes (hash-ref entry 'purposes #f))
+      (unless (and (list? purposes)
+                   (pair? purposes)
+                   (andmap string? purposes)
+                   (= (length purposes) (length (remove-duplicates purposes string=?)))
+                   (andmap (lambda (purpose) (member purpose allowed-purposes)) purposes))
+        (raise-arguments-error who
+                               "invalid trust-key purposes"
+                               "key_id"
+                               id
+                               "allowed"
+                               allowed-purposes
+                               "value"
+                               purposes))
       (define not-before (hash-ref entry 'not_before #f))
       (define not-after (hash-ref entry 'not_after #f))
       (unless (nullable-time? not-before)
@@ -112,7 +128,8 @@
                          (base64->public-key public-key-text)
                          status
                          not-before
-                         not-after))))
+                         not-after
+                         purposes))))
   (trust-store issuer keys))
 
 (define (read-trust-store source)
@@ -157,4 +174,20 @@
                            (trust-key-not-before key)
                            "key_not_after"
                            (trust-key-not-after key)))
+  key)
+
+(define (trust-key-authorize-type! key credential-type)
+  (unless (trust-key? key)
+    (raise-argument-error 'trust-key-authorize-type! "trust-key?" key))
+  (unless (and (string? credential-type) (positive? (string-length credential-type)))
+    (raise-argument-error 'trust-key-authorize-type! "non-empty string?" credential-type))
+  (unless (member credential-type (trust-key-purposes key))
+    (raise-arguments-error 'verify-credential
+                           "signing key is not authorized for credential type"
+                           "key_id"
+                           (trust-key-id key)
+                           "credential_type"
+                           credential-type
+                           "allowed_purposes"
+                           (trust-key-purposes key)))
   key)
