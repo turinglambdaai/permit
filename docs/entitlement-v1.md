@@ -139,7 +139,7 @@ A signed `trial-extension` contains exactly:
 }
 ```
 
-For a signed Permit trial, `trial_id` matches that trial's `entitlement_id`.
+For a signed Permit trial, `trial_id` matches that trial's `entitlement_id`. The extension issuer MUST also match the trial issuer.
 
 The extension carries an **absolute** `use_expires_at`, not “add N days”. Applying the same extension twice therefore cannot accumulate time. When several applicable extensions are present, the effective expiry is the latest of the base trial expiry and the valid extension expiries.
 
