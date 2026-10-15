@@ -33,6 +33,22 @@ The trust store is application configuration delivered through the application's
 - `retired` — no new issuance intended, but old credentials remain authentic; it MUST have a non-null `not_after` issuance cutoff;
 - `revoked` — compromise or explicit distrust; all credentials under this key fail verification.
 
+## Key generation
+
+The reference CLI can encode least privilege directly into a new trust-store entry:
+
+```bash
+raco permit keygen \
+  --private entitlement.der \
+  --public entitlement-public.der \
+  --trust-store trust-store.json \
+  --key-id entitlement-2026 \
+  --issuer com.example \
+  --purpose entitlement
+```
+
+Repeat `--purpose` when one key deliberately serves several credential types. Omitting the option preserves the small-deployment default of all Protocol v1 purposes.
+
 ## Key purposes
 
 Each key declares a non-empty `purposes` list drawn from the Protocol v1 credential types: `entitlement`, `trial`, `trial-extension`, and `activation`.
