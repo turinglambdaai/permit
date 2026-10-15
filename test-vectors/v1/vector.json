@@ -1,0 +1,14 @@
+{
+  "name": "Permit Protocol v1 entitlement",
+  "key_id": "rfc8032-test-1",
+  "algorithm": "Ed25519",
+  "private_seed_hex": "9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60",
+  "public_key_raw_hex": "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a",
+  "public_key_spki_base64": "MCowBQYDK2VwAyEA11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo=",
+  "payload_file": "entitlement-payload.json",
+  "payload_length": 1110,
+  "payload_sha256_hex": "0a301414d36710312453449c69ba34acf397bb75566d3255b42c1230a1b6c06b",
+  "signature_base64": "GBXIQzXPS0HT1gWI7EX/bVR8A7Z3jOQ2H/mxI4XZUZmvHm3wEL5UqvPu4o+t6rnXYQ7kmawiZoSzNOsnY2X1Dg==",
+  "credential_file": "entitlement.permit.json",
+  "trust_store_file": "trust-store.json"
+}

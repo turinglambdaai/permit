@@ -1,0 +1,49 @@
+{
+  "protocol": "permit",
+  "version": 1,
+  "type": "entitlement",
+  "credential_id": "ent_vector_01",
+  "issuer": "example.test",
+  "issued_at": "2026-10-15T00:00:00Z",
+  "not_before": null,
+  "subject": {
+    "type": "organization",
+    "id": "org_vector",
+    "display": "Example Team"
+  },
+  "channel": "commercial",
+  "grants": [
+    {
+      "scope": {
+        "products": ["gptp-studio", "benchpilot"],
+        "product_families": ["automotive-tools"]
+      },
+      "edition": "team",
+      "features": ["pcap-export", "engine-control"],
+      "addons": ["report-pack"],
+      "capabilities": {
+        "team-members": 5,
+        "devices": 10
+      }
+    }
+  ],
+  "constraints": {
+    "use_expires_at": null,
+    "updates_through": "2027-10-15T23:59:59Z",
+    "features_through": null,
+    "version_policy": {
+      "min": "1.0.0",
+      "max": "3.99.99"
+    },
+    "limits": {
+      "named_seats": 5,
+      "device_activations": 10,
+      "concurrent_seats": 2
+    },
+    "installation_id": null,
+    "activation_required": false
+  },
+  "extensions": {
+    "example.test/order_id": "ord_vector"
+  }
+}

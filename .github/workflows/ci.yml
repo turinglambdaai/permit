@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        racket-version: ["9.0", "9.3"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Bogdanp/setup-racket@v1.14
+        with:
+          version: ${{ matrix.racket-version }}
+      - name: Install package
+        run: raco pkg install --auto --no-docs --name permit .
+      - name: Compile
+        run: raco make permit/main.rkt permit/cli.rkt
+      - name: Test
+        run: raco test -p permit

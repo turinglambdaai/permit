@@ -1,0 +1,6 @@
+compiled/
+.DS_Store
+*.zo
+*.dep
+*.bak
+private-key.*
