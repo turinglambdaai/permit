@@ -39,8 +39,8 @@ One Protocol v1 vocabulary covers the common commercial shapes without baking pr
 | Product model | Right to use | Updates | Newly published features |
 | --- | --- | --- | --- |
 | Perpetual purchase | no expiry | unrestricted or bounded | unrestricted or bounded |
-| Surge Mac-style maintenance | perpetual | through maintenance date | normally unrestricted |
-| Surge iOS-style feature window | perpetual | normally unrestricted | through feature-window date |
+| Perpetual + maintenance window | perpetual | through maintenance date | normally unrestricted |
+| Perpetual + feature window | perpetual | normally unrestricted | through feature-window date |
 | Subscription | through subscription date | policy-defined | policy-defined |
 | Trial | through trial date | policy-defined | policy-defined |
 

@@ -173,26 +173,33 @@
 (check-true
  (edition-entitled? perpetual "unknown-product" "team" #:product-family "automotive-tools"))
 
-;; Surge Mac: use forever, only releases published inside maintenance window.
-(define surge-mac
-  (issue (entitlement "ent_surge_mac" (constraints #:updates "2027-10-15T23:59:59Z"))))
-(check-true (credential-usable? surge-mac #:at "2030-01-01T00:00:00Z"))
-(check-true
- (update-entitled? surge-mac "gptp-studio" "2027-10-15T23:59:59Z" #:at "2030-01-01T00:00:00Z"))
-(check-false
- (update-entitled? surge-mac "gptp-studio" "2027-10-16T00:00:00Z" #:at "2030-01-01T00:00:00Z"))
+;; Perpetual use with updates published only inside the maintenance window.
+(define perpetual-maintenance
+  (issue (entitlement "ent_perpetual_maintenance" (constraints #:updates "2027-10-15T23:59:59Z"))))
+(check-true (credential-usable? perpetual-maintenance #:at "2030-01-01T00:00:00Z"))
+(check-true (update-entitled? perpetual-maintenance
+                              "gptp-studio"
+                              "2027-10-15T23:59:59Z"
+                              #:at "2030-01-01T00:00:00Z"))
+(check-false (update-entitled? perpetual-maintenance
+                               "gptp-studio"
+                               "2027-10-16T00:00:00Z"
+                               #:at "2030-01-01T00:00:00Z"))
 
-;; Surge iOS: maintenance updates continue, but newly published features stop.
-(define surge-ios
-  (issue (entitlement "ent_surge_ios" (constraints #:features "2027-10-15T23:59:59Z"))))
-(check-true
- (update-entitled? surge-ios "gptp-studio" "2030-01-01T00:00:00Z" #:at "2030-01-01T00:00:00Z"))
-(check-true (feature-entitled? surge-ios
+;; Perpetual use while newly published features stop at a distinct cutoff.
+(define perpetual-feature-window
+  (issue (entitlement "ent_perpetual_feature_window"
+                      (constraints #:features "2027-10-15T23:59:59Z"))))
+(check-true (update-entitled? perpetual-feature-window
+                              "gptp-studio"
+                              "2030-01-01T00:00:00Z"
+                              #:at "2030-01-01T00:00:00Z"))
+(check-true (feature-entitled? perpetual-feature-window
                                "gptp-studio"
                                "pcap-export"
                                #:published-at "2027-10-15T23:59:59Z"
                                #:at "2030-01-01T00:00:00Z"))
-(check-false (feature-entitled? surge-ios
+(check-false (feature-entitled? perpetual-feature-window
                                 "gptp-studio"
                                 "pcap-export"
                                 #:published-at "2027-10-16T00:00:00Z"
