@@ -46,10 +46,11 @@ A conforming verifier performs these stages in order:
 1. Parse only the small outer envelope.
 2. Resolve `key_id` from the configured trust store and reject unknown or `revoked` keys. A trust store MUST NOT alias the same public key under several key ids.
 3. Verify the Ed25519 signature over the exact decoded payload bytes.
-4. Parse and validate the authenticated payload schema.
+4. Parse the authenticated payload with duplicate-object-member rejection and validate its closed schema.
 5. Require the payload `issuer` to match the selected trust store.
 6. Require authenticated `issued_at` to lie inside the signing key's issuance window.
-7. Hand the resulting verified credential to the policy evaluator.
+7. Require the signing key's `purposes` to authorize the signed credential `type`.
+8. Hand the resulting verified credential to the policy evaluator.
 
 The application MUST NOT authorize from raw output of an inspect/debug command.
 
