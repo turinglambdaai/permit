@@ -39,6 +39,7 @@
                            "trust store issuer"
                            (trust-store-issuer store)))
   (trust-key-authorize-issued-at! key (hash-ref claims 'issued_at))
+  (trust-key-authorize-type! key (hash-ref claims 'type))
   (verified-credential claims (permit-envelope-payload envelope) (permit-envelope-key-id envelope)))
 
 (define (verified-credential-type credential)
