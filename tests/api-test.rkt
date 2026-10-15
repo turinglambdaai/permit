@@ -8,12 +8,16 @@
 (define-runtime-path main-module "../permit/main.rkt")
 
 (check-true (procedure? verified-credential?))
-(check-true (procedure? verified-credential-claims))
 (check-true (procedure? verify-credential))
 
+(check-true
+ (procedure? (dynamic-require credential-module 'verified-credential-claims)))
 (check-exn exn:fail?
            (lambda ()
              (dynamic-require credential-module 'verified-credential)))
+(check-exn exn:fail?
+           (lambda ()
+             (dynamic-require main-module 'verified-credential-claims)))
 
 ;; Client facade intentionally omits issuer/wire constructors.
 (check-exn exn:fail?
