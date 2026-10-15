@@ -280,6 +280,9 @@
   (define result
     (hash-set*
      status
+     ;; status reasons are symbols; JSON output carries them as strings
+     'reasons
+     (map symbol->string (hash-ref status 'reasons '()))
      'credential_id
      (verified-credential-id credential)
      'entitlement_id
