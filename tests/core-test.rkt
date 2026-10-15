@@ -539,3 +539,51 @@
               '()
               'capabilities
               (hasheq 'bad +inf.0)))))))
+
+
+;; Management artifacts and lineage selection are issuer-scoped. Products may
+;; trust several independent issuers without allowing their credentials to mix.
+(define other-store
+  (jsexpr->trust-store
+   (hasheq 'protocol
+           "permit-trust-store"
+           'version
+           1
+           'issuer
+           "other.test"
+           'keys
+           (hasheq 'test-2026 (key-entry)))))
+
+(define (issue-other value)
+  (define payload (json-bytes (hash-set value 'issuer "other.test")))
+  (verify-credential
+   (make-signed-envelope "test-2026" payload private-key)
+   other-store))
+
+(define foreign-activation
+  (issue-other (activation managed-claims "ins_A")))
+(check-false
+ (activation-valid? managed
+                    foreign-activation
+                    "ins_A"
+                    #:at "2026-06-01T00:00:00Z"))
+
+(define foreign-extension
+  (issue-other
+   (trial-extension "ext_foreign"
+                    "trial_support_01"
+                    "2026-06-30T23:59:59Z")))
+(check-false
+ (trial-extension-valid? trial
+                         foreign-extension
+                         #:at "2026-06-20T00:00:00Z"))
+
+(define foreign-lineage
+  (issue-other
+   (entitlement "cred_foreign_lineage"
+                (constraints)
+                #:entitlement-id "ent_managed"
+                #:revision 2)))
+(check-exn #rx"different entitlement lineages"
+           (lambda ()
+             (select-latest-entitlement (list managed-r1 foreign-lineage))))
