@@ -153,6 +153,18 @@
   (and (or (eq? minimum 'null) (>= (semver-compare version minimum) 0))
        (or (eq? maximum 'null) (<= (semver-compare version maximum) 0))))
 
+(define (version-policy-satisfied? credential version)
+  (define policy
+    (hash-ref (hash-ref (claims-of 'version-policy-satisfied? credential) 'constraints)
+              'version_policy))
+  (define constrained?
+    (or (not (eq? (hash-ref policy 'min) 'null))
+        (not (eq? (hash-ref policy 'max) 'null))))
+  (cond
+    [(not constrained?) #t]
+    [(not version) #f]
+    [else (version-allowed? credential version)]))
+
 (define (base-policy-ok? credential at installation-id activation version trial-extensions)
   (and
    (credential-usable? credential
@@ -160,7 +172,7 @@
                        #:installation-id installation-id
                        #:activation activation
                        #:trial-extensions trial-extensions)
-   (or (not version) (version-allowed? credential version))))
+   (version-policy-satisfied? credential version)))
 
 (define (edition-entitled? credential
                            product
@@ -273,6 +285,7 @@
                      limit
                      #:default [default #f]
                      #:at [at (current-rfc3339)]
+                     #:version [version #f]
                      #:installation-id [installation-id #f]
                      #:activation [activation #f]
                      #:trial-extensions [trial-extensions '()])
@@ -284,7 +297,7 @@
                            limit
                            "allowed"
                            limit-names))
-  (if (base-policy-ok? credential at installation-id activation #f trial-extensions)
+  (if (base-policy-ok? credential at installation-id activation version trial-extensions)
       (let ([value
              (hash-ref (hash-ref (hash-ref (claims-of 'limit-value credential) 'constraints) 'limits)
                        key)])
