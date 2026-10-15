@@ -44,7 +44,7 @@ Unknown or missing envelope fields MUST be rejected. Trailing JSON values MUST b
 A conforming verifier performs these stages in order:
 
 1. Parse only the small outer envelope.
-2. Resolve `key_id` from the configured trust store and reject unknown or `revoked` keys.
+2. Resolve `key_id` from the configured trust store and reject unknown or `revoked` keys. A trust store MUST NOT alias the same public key under several key ids.
 3. Verify the Ed25519 signature over the exact decoded payload bytes.
 4. Parse and validate the authenticated payload schema.
 5. Require the payload `issuer` to match the selected trust store.
