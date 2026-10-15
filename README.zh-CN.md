@@ -65,7 +65,7 @@ raco permit keygen \
   --issuer com.example
 ```
 
-私钥不能进入源码仓库或应用包。对 payload 文件的原始字节签名：
+私钥不能进入源码仓库或应用包。可以先从 [`examples/`](examples/) 中选择一份已通过 schema 校验的商业模型模板，再对 payload 文件的原始字节签名：
 
 ```bash
 raco permit issue \
@@ -186,6 +186,7 @@ raco test tests/
 permit/
 ├── permit/                 # 信封、schema、策略、信任库和 CLI
 ├── docs/                   # 规范协议与管理边界
+├── examples/               # 已通过 schema 校验的商业模型模板
 ├── test-vectors/v1/        # 确定性跨语言语料
 ├── tests/                  # 单元、策略与向量测试
 └── site/                   # 双语产品主页
