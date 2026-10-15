@@ -68,7 +68,7 @@ raco permit keygen \
 私钥不能进入源码仓库或应用包。对 payload 文件的原始字节签名：
 
 ```bash
-raco permit sign \
+raco permit issue \
   --key private-key.der \
   --key-id license-2026 \
   --payload entitlement.json \
@@ -115,16 +115,18 @@ Ed25519 对解码后的 `payload` 字节做**精确签名**。验证端先验签
 
 Protocol v1 包含：
 
-- `entitlement`、`trial`、`activation` 三种凭证
+- `entitlement`、`trial`、`trial-extension`、`activation` 四种凭证
 - 相互独立的 `use_expires_at`、`updates_through`、`features_through` 窗口
 - 可选的产品版本范围与安装实例绑定
 - 版本、功能、附加项、套餐和标量能力授权
 - 团队、实名席位、设备数和并发席位限制
-- 带明确离线宽限期的短期激活租约
+- 用稳定 `entitlement_id` + 单调 `revision` 表达续费、重签和方案变更
+- 使用绝对截止时间、可安全重复导入的签名试用延期
+- 绑定到精确 entitlement 快照并带明确离线宽限期的短期激活租约
 - 支持 `next`、`active`、`retired`、`revoked` 状态的多密钥信任库
 - 确定性的跨语言测试向量
 
-详见[规范性的 Protocol v1 文档](docs/protocol-v1.md)和[管理边界](docs/management-boundaries.md)。
+从[规范性的 Protocol v1 文档](docs/protocol-v1.md)开始，再查看[权益模型](docs/entitlement-v1.md)、[激活租约](docs/activation-v1.md)、[信任模型](docs/trust-model.md)、[生命周期](docs/lifecycle.md)、[兼容规则](docs/compatibility.md)、[威胁模型](docs/threat-model.md)和[管理边界](docs/management-boundaries.md)。
 
 ## Racket API
 
@@ -144,6 +146,8 @@ Protocol v1 包含：
   (enable-pcap-export!))
 ```
 
+续费或方案变化不会修改旧文件，而是签发一个 `entitlement_id` 相同、`revision` 更高、`credential_id` 全新的完整权益快照。客户端只在自己实际拿到的凭证中选择最高 revision；这不是离线撤销机制。
+
 在线管理型产品会同时验证长期权益和短期安装租约：
 
 ```racket
@@ -156,7 +160,7 @@ Protocol v1 包含：
 
 ## 信任与密钥轮换
 
-应用只携带公钥。信任库可以先放入 `next` 密钥，再让签发端切换；用 `active` 密钥进行正常签发；通过截止时间让 `retired` 密钥继续验证历史凭证；并让 `revoked` 密钥立即失效。签发方约束、有效期和密码学签名会一起检查。
+应用只携带公钥。信任库可以先放入带未来签发起始时间的 `next` 密钥，再让签发端切换；用 `active` 密钥进行正常签发；`retired` 密钥保留明确的签发截止时间并继续验证截止前签出的永久凭证；`revoked` 密钥则立即失去信任。密钥时间窗约束的是凭证中已经签名的 `issued_at`，不是多年以后客户端执行验证的当前时间。
 
 因此，一个应用版本可以提前携带明天要启用的公钥，而本地验证路径始终保持确定。
 
