@@ -2,7 +2,9 @@
   "protocol": "permit",
   "version": 1,
   "type": "entitlement",
-  "credential_id": "ent_vector_01",
+  "credential_id": "cred_vector_01",
+  "entitlement_id": "ent_vector_01",
+  "revision": 0,
   "issuer": "example.test",
   "issued_at": "2026-10-15T00:00:00Z",
   "not_before": null,
@@ -15,12 +17,22 @@
   "grants": [
     {
       "scope": {
-        "products": ["gptp-studio", "benchpilot"],
-        "product_families": ["automotive-tools"]
+        "products": [
+          "gptp-studio",
+          "benchpilot"
+        ],
+        "product_families": [
+          "automotive-tools"
+        ]
       },
       "edition": "team",
-      "features": ["pcap-export", "engine-control"],
-      "addons": ["report-pack"],
+      "features": [
+        "pcap-export",
+        "engine-control"
+      ],
+      "addons": [
+        "report-pack"
+      ],
       "capabilities": {
         "team-members": 5,
         "devices": 10
