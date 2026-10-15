@@ -12,8 +12,17 @@
          verify-credential
          verified-credential-type
          verified-credential-id
+         verified-credential-issuer
+         verified-credential-issued-at
          verified-credential-entitlement-id
          verified-credential-revision
+         verified-credential-subject-type
+         verified-credential-subject-id
+         verified-credential-subject-display
+         verified-credential-channel
+         verified-credential-use-expires-at
+         verified-credential-updates-through
+         verified-credential-features-through
          select-latest-entitlement)
 
 (struct verified-credential (claims payload key-id) #:transparent)
@@ -50,6 +59,50 @@
 
 (define (verified-credential-id credential)
   (hash-ref (verified-credential-claims credential) 'credential_id))
+
+(define (verified-credential-issuer credential)
+  (hash-ref (verified-credential-claims credential) 'issuer))
+
+(define (verified-credential-issued-at credential)
+  (hash-ref (verified-credential-claims credential) 'issued_at))
+
+(define (entitlement-field credential field [default #f])
+  (define claims (verified-credential-claims credential))
+  (if (entitlement-like? claims)
+      (hash-ref claims field default)
+      default))
+
+(define (verified-credential-subject-type credential)
+  (define subject (entitlement-field credential 'subject #f))
+  (and subject (hash-ref subject 'type #f)))
+
+(define (verified-credential-subject-id credential)
+  (define subject (entitlement-field credential 'subject #f))
+  (and subject (hash-ref subject 'id #f)))
+
+(define (verified-credential-subject-display credential)
+  (define subject (entitlement-field credential 'subject #f))
+  (and subject
+       (let ([value (hash-ref subject 'display 'null)])
+         (if (eq? value 'null) #f value))))
+
+(define (verified-credential-channel credential)
+  (entitlement-field credential 'channel #f))
+
+(define (constraint-field credential field)
+  (define constraints (entitlement-field credential 'constraints #f))
+  (and constraints
+       (let ([value (hash-ref constraints field 'null)])
+         (if (eq? value 'null) #f value))))
+
+(define (verified-credential-use-expires-at credential)
+  (constraint-field credential 'use_expires_at))
+
+(define (verified-credential-updates-through credential)
+  (constraint-field credential 'updates_through))
+
+(define (verified-credential-features-through credential)
+  (constraint-field credential 'features_through))
 
 (define (verified-credential-entitlement-id credential)
   (define claims (verified-credential-claims credential))
