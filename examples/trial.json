@@ -23,11 +23,10 @@
         "product_families": []
       },
       "edition": "pro",
-      "features": [
-        "pro-feature"
-      ],
+      "features": [],
       "addons": [],
-      "capabilities": {}
+      "capabilities": {},
+      "feature_policy": "published-through"
     }
   ],
   "constraints": {
