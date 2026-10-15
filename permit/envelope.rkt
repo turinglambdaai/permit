@@ -1,9 +1,9 @@
 #lang racket/base
 
 (require json
-         racket/port
          "crypto.rkt"
-         "private/encoding.rkt")
+         "private/encoding.rkt"
+         "private/json.rkt")
 
 (provide (struct-out permit-envelope)
          make-signed-envelope
@@ -70,12 +70,7 @@
   (permit-envelope key-id payload signature))
 
 (define (read-envelope source)
-  (define value
-    (cond
-      [(input-port? source) (read-json source)]
-      [(path-string? source) (call-with-input-file source read-json #:mode 'text)]
-      [else (raise-argument-error 'read-envelope "(or/c input-port? path-string?)" source)]))
-  (jsexpr->envelope value))
+  (jsexpr->envelope (read-json-source/strict 'read-envelope source)))
 
 (define (write-envelope envelope destination)
   (define (write-to out)
@@ -88,4 +83,6 @@
     [else (raise-argument-error 'write-envelope "(or/c output-port? path-string?)" destination)]))
 
 (define (verify-envelope-signature envelope public-key)
-  (ed25519-verify public-key (permit-envelope-payload envelope) (permit-envelope-signature envelope)))
+  (ed25519-verify public-key
+                  (permit-envelope-payload envelope)
+                  (permit-envelope-signature envelope)))

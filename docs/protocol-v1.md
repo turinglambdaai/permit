@@ -1,203 +1,136 @@
 # Permit Protocol v1
 
-This document is normative for the wire format implemented by Permit v0.1. The words MUST, MUST NOT, SHOULD, and MAY have their usual RFC 2119 meanings.
+This document is the normative entry point for Permit Protocol v1. The words **MUST**, **MUST NOT**, **SHOULD**, and **MAY** are used in the RFC 2119 sense.
 
-## 1. Design goals
+Permit is **offline-verifiable and online-manageable**. A client can authenticate durable product rights without contacting an issuer. Products that need timely seat reclamation, revocation, or subscription control add short-lived signed management artifacts rather than turning a server boolean into the root of trust.
 
-Permit is **offline-verifiable and online-manageable**:
+Protocol v1 does not define checkout, tax, accounts, email delivery, dashboards, SaaS metering, or a hosted license server.
 
-- A client MUST be able to verify a credential without contacting an issuer.
-- An issuer MAY refresh long-lived entitlements or issue short-lived activation leases.
-- A purely offline entitlement cannot be instantly revoked. A product that needs timely revocation MUST use refreshed revocation data or short-lived activation leases.
-- A server response is never trusted merely because it says `true`; management services issue signed credentials that remain locally verifiable.
+## 1. Layers
 
-Protocol v1 defines entitlement evidence, not checkout, payment, tax, accounts, email delivery, dashboards, or a hosted management API.
+Permit deliberately separates four layers:
 
-## 2. Exact-payload envelope
+1. **Envelope** — exact-byte Ed25519 authentication.
+2. **Credential model** — entitlement, trial, trial-extension, and activation claims.
+3. **Policy** — use, update, feature, version, installation, and activation decisions.
+4. **Management plane** — optional future services that issue or refresh signed credentials.
 
-The envelope is a UTF-8 JSON object with exactly these fields:
+An authenticated credential is not automatically usable. Verification proves who signed the exact bytes and that the claims conform to the schema. Policy evaluation decides whether those claims are effective at a particular time and installation.
+
+## 2. Signed envelope
+
+The outer document MUST be one UTF-8 JSON object and MUST contain exactly:
 
 | Field | Value |
 | --- | --- |
 | `permit_version` | integer `1` |
 | `algorithm` | string `Ed25519` |
-| `key_id` | non-empty string selecting a trust-store key |
-| `payload` | standard padded Base64 of the exact payload bytes |
-| `signature` | standard padded Base64 of a 64-byte Ed25519 signature |
+| `key_id` | non-empty string |
+| `payload` | canonical padded standard Base64 |
+| `signature` | canonical padded standard Base64 of a 64-byte Ed25519 signature |
 
-Signing is:
+The signature operation is:
 
 ```text
 signature = Ed25519.Sign(private_key, BASE64_DECODE(payload))
 ```
 
-Verification MUST decode `payload`, verify its signature, and only then parse it. It MUST NOT sign or verify a JSON re-serialization. Whitespace, property order, and a trailing newline are therefore authenticated data.
+A verifier MUST authenticate the decoded payload bytes **exactly**. It MUST NOT parse the payload and then verify a re-serialization. Whitespace, property order, escapes, and a trailing newline are therefore authenticated bytes.
 
-Unknown or missing envelope fields MUST be rejected.
+Unknown or missing envelope fields MUST be rejected. Trailing JSON values MUST be rejected.
 
-## 3. Common credential rules
+## 3. Verification pipeline
 
-The payload is UTF-8 JSON containing exactly one object. Security-critical objects have closed schemas. Unknown core fields MUST be rejected. Vendor additions belong under `extensions`, whose keys SHOULD be namespaced, such as `example.com/order_id`.
+A conforming verifier performs these stages in order:
 
-All timestamps MUST use fixed-width UTC RFC 3339 form:
+1. Parse only the small outer envelope.
+2. Resolve `key_id` from the configured trust store and reject unknown or `revoked` keys. A trust store MUST NOT alias the same public key under several key ids.
+3. Verify the Ed25519 signature over the exact decoded payload bytes.
+4. Parse the authenticated payload with duplicate-object-member rejection and validate its closed schema.
+5. Require the payload `issuer` to match the selected trust store.
+6. Require authenticated `issued_at` to lie inside the signing key's issuance window.
+7. Require the signing key's `purposes` to authorize the signed credential `type`.
+8. Hand the resulting verified credential to the policy evaluator.
+
+The application MUST NOT authorize from raw output of an inspect/debug command.
+
+## 4. Payload rules
+
+Every payload is exactly one UTF-8 JSON object.
+
+Security-critical schemas are closed: unknown fields outside `extensions` MUST be rejected. Vendor data belongs under `extensions`; extension keys SHOULD be namespaced, for example `example.com/order_id`.
+
+JSON object member names MUST be unique at every nesting level. Conforming verifiers MUST reject duplicates before authorization, including spellings that decode to the same member name. Cross-language implementations must not rely on first-wins or last-wins parser behavior.
+
+All protocol timestamps use exactly:
 
 ```text
 YYYY-MM-DDTHH:MM:SSZ
 ```
 
-Calendar dates, local times, and floating timestamps are not permitted.
+They are UTC, second precision, and have no local-time or offset form.
 
-Every credential has:
+Version bounds use strict SemVer 2.0 strings such as `2.4.0` or `2.4.0-beta.1`. A leading `v`, missing components, or leading zeroes in numeric identifiers are not Protocol v1 SemVer.
 
-- `protocol`: `permit`
-- `version`: `1`
-- `type`: a supported credential type
-- `credential_id`: globally unique, stable identifier
-- `issuer`: stable issuer identifier, matched against the trust store
-- `issued_at`: signing time
-- `not_before`: activation time or `null`
-- `extensions`: JSON object
+## 5. Common credential identity
 
-Verifiers MUST reject a credential issued in the future or evaluated before `not_before`.
+Each signed statement has a globally unique `credential_id`.
 
-## 4. Entitlement and trial
+Entitlement-like credentials additionally have:
 
-`entitlement` and `trial` share the same shape and policy API. Their exact fields are:
+- `entitlement_id` — stable identity for one logical commercial right across renewals or reissues;
+- `revision` — non-negative integer that increases when that logical right is reissued.
 
-```text
-protocol, version, type, credential_id, issuer, issued_at, not_before,
-subject, channel, grants, constraints, extensions
-```
+Two different payloads MUST NOT intentionally reuse the same `entitlement_id` and `revision`.
 
-`subject` contains exactly:
+A client that has several revisions MAY select the highest revision it has received. **Revision is not revocation.** A fully offline client that never receives revision 2 cannot infer that revision 1 was superseded.
 
-```json
-{"type":"person|organization|account|device|installation|anonymous",
- "id":"stable-id",
- "display":"optional human label or null"}
-```
+## 6. Credential types
 
-The implementation permits future subject type strings but treats `id`, not `display`, as identity.
+Protocol v1 assigns wire semantics to four credential types:
 
-`channel` separates commercial context from product edition. Typical values are `commercial`, `trial`, `education`, `nfr`, `internal`, `beta`, and `oem`.
-
-### 4.1 Grants
-
-`grants` is a non-empty list. Each grant has exactly:
-
-```json
-{
-  "scope": {
-    "products": ["gptp-studio"],
-    "product_families": ["automotive-tools"]
-  },
-  "edition": "pro",
-  "features": ["pcap-export"],
-  "addons": ["report-pack"],
-  "capabilities": {"packet-store-limit": 50000}
-}
-```
-
-A scope MUST name at least one product or product family. Multiple products express a bundle. Features and add-ons are exact identifiers; applications SHOULD namespace globally shared identifiers. Capabilities are signed scalar strings, booleans, or numbers.
-
-### 4.2 Constraints
-
-`constraints` has exactly:
-
-| Field | Meaning |
+| Type | Purpose |
 | --- | --- |
-| `use_expires_at` | Last instant the granted product may run, or `null` |
-| `updates_through` | Latest permitted release publication time, or `null` |
-| `features_through` | Latest permitted feature publication time, or `null` |
-| `version_policy` | Optional inclusive `min` and `max` SemVer-compatible bounds |
-| `limits` | `named_seats`, `device_activations`, `concurrent_seats`; each integer or `null` |
-| `installation_id` | Required installation identifier or `null` |
-| `activation_required` | Whether a matching activation credential is mandatory |
+| `entitlement` | durable commercial right |
+| `trial` | finite entitlement evaluated through the same product policy |
+| `trial-extension` | signed absolute extension for a named trial id |
+| `activation` | short-lived installation lease bound to an exact entitlement snapshot |
 
-The time windows are independent:
+See:
 
-- `use_expires_at = null` is perpetual use.
-- A release is update-entitled when `release.published_at <= updates_through`, or the cutoff is `null`.
-- A feature is entitled when `feature.published_at <= features_through`, or the cutoff is `null`.
+- [Entitlements and trials](entitlement-v1.md)
+- [Activation leases](activation-v1.md)
+- [Trust model](trust-model.md)
+- [Lifecycle](lifecycle.md)
+- [Compatibility rules](compatibility.md)
+- [Threat model](threat-model.md)
 
-Products MUST attach immutable publication timestamps to releases and paid feature cohorts. Changing a timestamp after sale would change contractual policy.
+## 7. Trust semantics
 
-## 5. Activation lease
+A trust key has a lifecycle status of `next`, `active`, `retired`, or `revoked`.
 
-An activation is not a replacement license. It is short-lived evidence that a management service currently allocates one installation against an entitlement.
+The key's `not_before` / `not_after` range constrains the authenticated credential `issued_at`. It does **not** constrain the wall-clock time when a client verifies an old credential. This is essential for perpetual offline rights: a credential legitimately signed during a key's issuance window remains authentic after that key is retired.
 
-The payload contains exactly:
+`revoked` is different: a revoked public key MUST fail verification regardless of credential issue time.
 
-```json
-{
-  "protocol": "permit",
-  "version": 1,
-  "type": "activation",
-  "credential_id": "act_...",
-  "entitlement_id": "ent_...",
-  "issuer": "example.com",
-  "issued_at": "2026-10-15T00:00:00Z",
-  "not_before": null,
-  "lease_id": "lease_...",
-  "installation_id": "ins_...",
-  "valid_until": "2026-10-22T00:00:00Z",
-  "offline_grace_seconds": 604800,
-  "extensions": {}
-}
-```
+## 8. Fail-closed rules
 
-An activation is valid only when:
+A conforming implementation rejects:
 
-- its signature and schema are valid;
-- its `entitlement_id` matches the entitlement credential;
-- its `installation_id` matches the local stable installation ID;
-- time is within `not_before` and `valid_until + offline_grace_seconds`.
+- unsupported protocol/envelope versions or algorithms;
+- unknown or missing core fields;
+- invalid or non-canonical Base64;
+- malformed timestamps or SemVer bounds;
+- unknown, revoked, or issuer-mismatched trust keys;
+- credentials issued outside the signing key's issuance window;
+- credential types outside the signing key's declared `purposes`;
+- duplicate JSON object member names;
+- invalid signatures;
+- unsupported credential types;
+- mismatched activation entitlement id, revision, credential id, or installation id.
 
-`installation_id` SHOULD be random and stable for an application installation. It MUST NOT be a raw hardware serial, MAC address, advertising ID, or other invasive fingerprint. The management service decides how installations are allocated and released.
+## 9. Evolution
 
-## 6. Trust store and rotation
+Protocol v1 is intentionally strict. Additive vendor information goes under `extensions`. A new security-critical top-level field or a new credential wire type is not silently interpreted by a v1 verifier.
 
-A trust store has:
-
-```json
-{
-  "protocol": "permit-trust-store",
-  "version": 1,
-  "issuer": "example.com",
-  "keys": {
-    "license-2026": {
-      "algorithm": "Ed25519",
-      "public_key": "<Base64 SubjectPublicKeyInfo DER>",
-      "status": "active",
-      "not_before": null,
-      "not_after": null
-    }
-  }
-}
-```
-
-Statuses are `next`, `active`, `retired`, and `revoked`.
-
-- `next`, `active`, and `retired` keys may verify inside their time window.
-- `retired` means “do not issue new credentials”, not “invalidate old credentials”. Issuers enforce signing policy.
-- `revoked` keys MUST fail verification.
-- Clients SHOULD ship current, previous, and next public keys before rotating issuance.
-
-Replacing an embedded trust store requires the application's normal authenticated update path. Permit signing keys SHOULD be separate from application-update signing keys.
-
-## 7. Fail-closed behavior
-
-Verifiers MUST reject:
-
-- unsupported protocol versions or algorithms;
-- unknown/missing fields outside `extensions`;
-- unknown credential types;
-- invalid Base64, key IDs, signatures, issuers, timestamps, or field types;
-- revoked or out-of-window trust keys;
-- activation/installation mismatches.
-
-Applications MUST authorize from a successfully verified credential object, never from raw inspected JSON.
-
-## 8. Reserved evolution
-
-Future protocol versions may add revocation lists, delegation, migration, trial-extension commands, store receipts, or enterprise floating leases. Protocol v1 does not assign wire semantics to those types. A v1 verifier rejects them rather than guessing.
+Future protocol versions may define delegated issuers, signed revocation lists, store-receipt exchange, or enterprise floating-lease protocols. Existing v1 credentials remain byte-for-byte verifiable under their v1 rules.

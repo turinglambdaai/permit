@@ -1,0 +1,49 @@
+{
+  "protocol": "permit",
+  "version": 1,
+  "type": "entitlement",
+  "credential_id": "cred_feature_window",
+  "entitlement_id": "ent_feature_window",
+  "revision": 0,
+  "issuer": "com.example",
+  "issued_at": "2026-10-15T00:00:00Z",
+  "not_before": null,
+  "subject": {
+    "type": "person",
+    "id": "customer_01",
+    "display": "customer@example.com"
+  },
+  "channel": "commercial",
+  "grants": [
+    {
+      "scope": {
+        "products": [
+          "example-app"
+        ],
+        "product_families": []
+      },
+      "edition": "pro",
+      "features": [],
+      "addons": [],
+      "capabilities": {},
+      "feature_policy": "published-through"
+    }
+  ],
+  "constraints": {
+    "use_expires_at": null,
+    "updates_through": null,
+    "features_through": "2027-10-15T23:59:59Z",
+    "version_policy": {
+      "min": null,
+      "max": null
+    },
+    "limits": {
+      "named_seats": null,
+      "device_activations": null,
+      "concurrent_seats": null
+    },
+    "installation_id": null,
+    "activation_required": false
+  },
+  "extensions": {}
+}
