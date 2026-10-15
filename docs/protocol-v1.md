@@ -59,7 +59,7 @@ Every payload is exactly one UTF-8 JSON object.
 
 Security-critical schemas are closed: unknown fields outside `extensions` MUST be rejected. Vendor data belongs under `extensions`; extension keys SHOULD be namespaced, for example `example.com/order_id`.
 
-Issuers MUST NOT emit JSON objects with duplicate member names. Cross-language implementations must not rely on parser-specific duplicate-key behavior.
+JSON object member names MUST be unique at every nesting level. Conforming verifiers MUST reject duplicates before authorization, including spellings that decode to the same member name. Cross-language implementations must not rely on first-wins or last-wins parser behavior.
 
 All protocol timestamps use exactly:
 
@@ -122,6 +122,8 @@ A conforming implementation rejects:
 - malformed timestamps or SemVer bounds;
 - unknown, revoked, or issuer-mismatched trust keys;
 - credentials issued outside the signing key's issuance window;
+- credential types outside the signing key's declared `purposes`;
+- duplicate JSON object member names;
 - invalid signatures;
 - unsupported credential types;
 - mismatched activation entitlement id, revision, credential id, or installation id.
