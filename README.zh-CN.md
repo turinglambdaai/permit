@@ -169,7 +169,7 @@ Permit v0.1 **不实现**支付、客户账号、邮件、定价、税务、管�
 ## 开发
 
 ```bash
-raco pkg install --auto --no-docs --name permit .
+raco pkg install --auto --no-docs --link
 raco make permit/main.rkt permit/cli.rkt
 raco test tests/
 ```

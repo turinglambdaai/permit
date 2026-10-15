@@ -22,7 +22,7 @@ jobs:
         with:
           version: ${{ matrix.racket-version }}
       - name: Install package
-        run: raco pkg install --auto --no-docs --name permit .
+        run: raco pkg install --auto --no-docs --name permit "${{ github.workspace }}"
       - name: Compile
         run: raco make permit/main.rkt permit/cli.rkt
       - name: Test

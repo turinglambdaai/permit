@@ -169,7 +169,7 @@ Seat allocation, device reclamation, subscription renewal, and account recovery 
 ## Development
 
 ```bash
-raco pkg install --auto --no-docs --name permit .
+raco pkg install --auto --no-docs --link
 raco make permit/main.rkt permit/cli.rkt
 raco test tests/
 ```
