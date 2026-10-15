@@ -3,6 +3,7 @@
 (require json
          racket/cmdline
          racket/file
+         racket/list
          racket/port
          "credential.rkt"
          "crypto.rkt"
