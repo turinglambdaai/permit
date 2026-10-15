@@ -1,42 +1,105 @@
 # Permit
 
-**Signed entitlements for independent software.**
+**Signed product rights for independent software — verifiable offline, manageable online when you need it.**
 
-Human-friendly. Offline-first. No account required. No phone-home. Cryptographically signed.
+[![CI](https://github.com/turinglambdaai/permit/actions/workflows/ci.yml/badge.svg)](https://github.com/turinglambdaai/permit/actions/workflows/ci.yml) ![Racket](https://img.shields.io/badge/Racket-9F1D20?logo=racket&logoColor=white) [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE) ![Protocol](https://img.shields.io/badge/protocol-v1-3559E0)
 
-Permit is a framework-neutral protocol and Racket reference implementation for answering one question:
+**English** · [中文](README.zh-CN.md) · [Website](https://permit.jrtx.site)
+
+Permit is a framework-neutral protocol and Racket reference implementation for answering one product question:
 
 > What may this person, organization, or installation use right now?
 
-It is deliberately not payment processing, an account system, a customer dashboard, or a license server. Commerce systems may issue or refresh Permit credentials later; applications can verify those credentials locally with only an embedded public trust store.
+Payment providers can tell you that money moved. Account systems can tell you who signed in. Permit turns durable product rights into signed, portable credentials that an application can verify locally with an embedded public trust store — without requiring an account, a network round trip, or a framework-owned licensing subsystem.
 
-## What v0.1 includes
+## Why Permit?
 
-- Permit Protocol v1 and its exact-payload Ed25519 envelope
-- Signed `entitlement`, `trial`, and `activation` credentials
-- Offline verification with a multi-key trust store and rotation states
-- Grants for editions, features, add-ons, bundles, and scalar capabilities
-- Separate use, update-maintenance, and new-feature time windows
-- Optional version bounds, installation binding, named/device/concurrent limits
-- Short-lived activation leases with an explicit offline grace period
-- A Racket library and `raco permit` CLI
-- Deterministic cross-language test vectors
+Commercial applications need two properties that are often treated as opposites:
 
-The same model expresses:
+- **Offline-verifiable** — the installed application can authorize features without phoning home.
+- **Online-manageable** — a future issuer may renew subscriptions, allocate seats, rotate keys, or refresh short-lived activation leases without changing the verification protocol.
 
-| Model | `use_expires_at` | `updates_through` | `features_through` |
+Permit separates those concerns. Long-lived **entitlements** describe commercial rights, optional **activation leases** bind a right to an installation for a limited period, and **trials** remain their own credential type. Products opt into only the layers they need.
+
+Permit composes beside an application framework:
+
+```text
+                         Product
+                       /         \
+              Rivet or Glaze     Permit
+              runtime / update   product rights
+```
+
+Rivet and Glaze do not depend on Permit. Update-artifact signing and Permit credential signing also use separate keys and trust policies.
+
+## What it models
+
+One Protocol v1 vocabulary covers the common commercial shapes without baking pricing or payment policy into the app:
+
+| Product model | Right to use | Updates | Newly published features |
 | --- | --- | --- | --- |
-| Perpetual purchase | `null` | `null` | `null` |
-| Surge Mac-style maintenance | `null` | maintenance end | `null` |
-| Surge iOS-style new features | `null` | `null` | feature window end |
-| Subscription | subscription end | as required | as required |
-| Trial | trial end | policy-defined | policy-defined |
+| Perpetual purchase | no expiry | unrestricted or bounded | unrestricted or bounded |
+| Surge Mac-style maintenance | perpetual | through maintenance date | normally unrestricted |
+| Surge iOS-style feature window | perpetual | normally unrestricted | through feature-window date |
+| Subscription | through subscription date | policy-defined | policy-defined |
+| Trial | through trial date | policy-defined | policy-defined |
 
-Team seats, device activations, and concurrent seats are distinct claims. Permit v0.1 validates and exposes them, but a future management service allocates or reclaims them.
+Grants may name editions, features, add-ons, bundles, and scalar capabilities. Team ownership, named seats, device activations, and concurrent seats are distinct claims rather than one overloaded counter. `installation_id` is an application-generated, privacy-preserving identifier — not a hardware fingerprint.
 
-## Protocol shape
+## Quick start
 
-A credential is an envelope:
+Install the Racket package:
+
+```bash
+raco pkg install --auto --name permit https://github.com/turinglambdaai/permit.git
+```
+
+Generate an Ed25519 key pair and starter trust store:
+
+```bash
+raco permit keygen \
+  --private private-key.der \
+  --public public-key.der \
+  --trust-store trust-store.json \
+  --key-id license-2026 \
+  --issuer com.example
+```
+
+Keep the private key out of source control and application bundles. Sign the exact bytes of a payload file:
+
+```bash
+raco permit sign \
+  --key private-key.der \
+  --key-id license-2026 \
+  --payload entitlement.json \
+  --output entitlement.permit.json
+```
+
+Verify the signature, trust key, issuer, and schema:
+
+```bash
+raco permit verify \
+  --trust-store trust-store.json \
+  --credential entitlement.permit.json
+```
+
+Then evaluate product policy:
+
+```bash
+raco permit check \
+  --trust-store trust-store.json \
+  --credential entitlement.permit.json \
+  --product gptp-studio \
+  --feature pcap-export \
+  --feature-published-at 2026-10-01T00:00:00Z \
+  --version 2.0.0
+```
+
+`inspect` is deliberately labelled unverified. Never authorize a feature from inspected claims alone.
+
+## Protocol v1
+
+A credential is a small JSON envelope:
 
 ```json
 {
@@ -48,68 +111,20 @@ A credential is an envelope:
 }
 ```
 
-The signature covers the decoded `payload` bytes exactly. A verifier does not parse and re-serialize JSON before checking the signature. This avoids canonicalization ambiguity across languages.
+Ed25519 signs the decoded `payload` bytes **exactly**. A verifier checks the signature before parsing authorization claims and never parses then re-serializes the JSON for verification. That rule avoids cross-language canonicalization ambiguity.
 
-See [Protocol v1](docs/protocol-v1.md) for the normative schema and [management boundaries](docs/management-boundaries.md) for what intentionally remains outside v0.1.
+Protocol v1 includes:
 
-## Install and test
+- `entitlement`, `trial`, and `activation` credentials
+- independent `use_expires_at`, `updates_through`, and `features_through` windows
+- optional product-version bounds and installation binding
+- edition, feature, add-on, bundle, and scalar-capability grants
+- team, named-seat, device, and concurrent-seat limits
+- short-lived activation leases with an explicit offline grace period
+- multi-key trust stores with `next`, `active`, `retired`, and `revoked` states
+- deterministic cross-language test vectors
 
-```sh
-raco pkg install --auto --name permit https://github.com/turinglambdaai/permit.git
-raco test -p permit
-```
-
-For a checkout:
-
-```sh
-raco pkg install --auto --no-docs --name permit .
-raco test -p permit
-```
-
-## CLI
-
-Generate an Ed25519 key pair and a starter trust store:
-
-```sh
-raco permit keygen \
-  --private private-key.der \
-  --public public-key.der \
-  --trust-store trust-store.json \
-  --key-id license-2026 \
-  --issuer com.example
-```
-
-Keep the private key out of source control and application bundles. Sign an exact payload file:
-
-```sh
-raco permit sign \
-  --key private-key.der \
-  --key-id license-2026 \
-  --payload entitlement.json \
-  --output entitlement.permit.json
-```
-
-Verify cryptography, the trust key, issuer, and schema:
-
-```sh
-raco permit verify \
-  --trust-store trust-store.json \
-  --credential entitlement.permit.json
-```
-
-Evaluate application policy:
-
-```sh
-raco permit check \
-  --trust-store trust-store.json \
-  --credential entitlement.permit.json \
-  --product gptp-studio \
-  --feature pcap-export \
-  --feature-published-at 2026-10-01T00:00:00Z \
-  --version 2.0.0
-```
-
-`inspect` is intentionally marked unverified. Never authorize a feature from inspected claims alone.
+Read the [normative Protocol v1 specification](docs/protocol-v1.md) and the [management boundary](docs/management-boundaries.md).
 
 ## Racket API
 
@@ -129,7 +144,7 @@ raco permit check \
   (enable-pcap-export!))
 ```
 
-An online-managed product verifies both long-lived commercial rights and a short-lived installation lease:
+An online-managed product verifies both the durable right and a short-lived installation lease:
 
 ```racket
 (credential-usable? entitlement
@@ -137,23 +152,45 @@ An online-managed product verifies both long-lived commercial rights and a short
                     #:activation activation-lease)
 ```
 
-Offline products omit the activation layer entirely.
+An offline product omits the activation layer entirely.
 
-## Architecture
+## Trust and rotation
 
-Permit composes beside an application framework:
+Applications ship only public keys. A trust store can stage a `next` key before an issuer starts signing with it, keep an `active` key for normal issuance, retain a `retired` key for credentials issued before a cutoff, and reject a `revoked` key immediately. Issuer constraints and validity windows are checked together with the cryptographic signature.
 
-```text
-             Product
-            /       \
-   Rivet or Glaze   Permit
-   runtime/update   commercial rights
+This lets a release carry tomorrow's public key before the issuing service switches over, while preserving a deterministic offline verification path.
+
+## Deliberate boundary
+
+Permit v0.1 does **not** implement payment processing, customer accounts, email, pricing, tax, a dashboard, hosted metering, or a license server. Those systems may issue and refresh Permit credentials later; they do not belong in the verification core.
+
+Seat allocation, device reclamation, subscription renewal, and account recovery are future management operations. The v0.1 boundary defines the signed artifacts those systems exchange with products.
+
+## Development
+
+```bash
+raco pkg install --auto --no-docs --name permit .
+raco make permit/main.rkt permit/cli.rkt
+raco test tests/
 ```
 
-Rivet and Glaze do not depend on Permit. A product opts into both. Update artifact signing and product entitlements also remain separate keys and responsibilities.
+The deterministic corpus under [`test-vectors/v1`](test-vectors/v1) is the interoperability contract for other language implementations.
+
+## Repository structure
+
+```text
+permit/
+├── permit/                 # envelope, schema, policy, trust and CLI modules
+├── docs/                   # normative protocol and management boundary
+├── test-vectors/v1/        # deterministic cross-language corpus
+├── tests/                  # unit, policy and vector tests
+└── site/                   # bilingual product homepage
+```
 
 ## Status
 
-Protocol v1 is implemented for the v0.1 credential types, but the repository has not yet declared a stable 1.0 compatibility promise. Security-sensitive core fields fail closed; only `extensions` is open-ended.
+Protocol v1 is implemented for the v0.1 credential types, but the repository has not declared a stable 1.0 compatibility promise. Security-sensitive fields fail closed; only `extensions` is open-ended.
 
-Licensed under Apache-2.0.
+## License
+
+[Apache-2.0](LICENSE)

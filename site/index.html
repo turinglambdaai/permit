@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Permit — Signed product rights</title>
+  <meta name="description" content="Offline-verifiable, online-manageable signed product entitlements. An open protocol and Racket reference implementation.">
+  <meta name="theme-color" content="#f3f0e8">
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    (function () {
+      var theme = localStorage.getItem('permit-theme');
+      if (!theme) theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.dataset.theme = theme;
+      var lang = localStorage.getItem('permit-lang');
+      if (!lang) lang = (navigator.language || 'en').toLowerCase().startsWith('zh') ? 'zh' : 'en';
+      document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    })();
+  </script>
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="#top" aria-label="Permit home">
+        <span class="brand-mark" aria-hidden="true">P</span>
+        <span>Permit</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="#why" data-i18n="nav.why">Why</a>
+        <a href="#models" data-i18n="nav.models">Models</a>
+        <a href="#protocol" data-i18n="nav.protocol">Protocol</a>
+        <a href="#start" data-i18n="nav.start">Quick start</a>
+        <a href="https://github.com/turinglambdaai/permit">GitHub</a>
+        <button class="text-button" id="lang-button" type="button" aria-label="Switch language">中文</button>
+        <button class="theme-button" id="theme-button" type="button" aria-label="Toggle color theme">
+          <span class="theme-light" aria-hidden="true">◐</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow" data-i18n="hero.eyebrow">Protocol v1 · Ed25519 · Apache-2.0</p>
+        <h1 data-i18n="hero.title">Sign once.<br>Authorize anywhere.</h1>
+        <p class="lede" data-i18n="hero.lede">Permit gives independent software a small, open format for product rights that work offline and stay manageable online.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#start" data-i18n="hero.start">Get started</a>
+          <a class="button secondary" href="https://github.com/turinglambdaai/permit/blob/main/docs/protocol-v1.md" data-i18n="hero.spec">Read Protocol v1</a>
+        </div>
+        <div class="proof-row" aria-label="Core properties">
+          <span><i></i><b data-i18n="proof.offline">Offline-verifiable</b></span>
+          <span><i></i><b data-i18n="proof.online">Online-manageable</b></span>
+          <span><i></i><b data-i18n="proof.framework">Framework-neutral</b></span>
+        </div>
+      </div>
+
+      <div class="credential-stage" aria-label="Signed Permit credential">
+        <div class="orbit orbit-one"></div>
+        <div class="orbit orbit-two"></div>
+        <article class="credential-card">
+          <div class="credential-head">
+            <div>
+              <span class="micro" data-i18n="credential.label">SIGNED CREDENTIAL</span>
+              <h2>permit/v1</h2>
+            </div>
+            <span class="verified"><span>✓</span> <span data-i18n="credential.verified">verified</span></span>
+          </div>
+          <dl>
+            <div><dt>type</dt><dd>entitlement</dd></div>
+            <div><dt>subject</dt><dd>org:studio-42</dd></div>
+            <div><dt>product</dt><dd>pro.desktop</dd></div>
+            <div><dt>edition</dt><dd>team</dd></div>
+            <div><dt>seats</dt><dd>12 named</dd></div>
+            <div><dt>use</dt><dd>perpetual</dd></div>
+          </dl>
+          <div class="signature">
+            <span>Ed25519</span>
+            <code>0a:30:14:14:d3:67…</code>
+          </div>
+        </article>
+        <div class="key-tag key-public"><span data-i18n="credential.public">public trust</span><b>active</b></div>
+        <div class="key-tag key-payload"><span data-i18n="credential.payload">exact payload</span><b>1,110 bytes</b></div>
+      </div>
+    </section>
+
+    <section id="why" class="section split">
+      <div class="section-heading">
+        <p class="eyebrow" data-i18n="why.eyebrow">THE MISSING PRODUCT LAYER</p>
+        <h2 data-i18n="why.title">Payments are not permissions.</h2>
+      </div>
+      <div class="prose">
+        <p data-i18n="why.p1">A payment event proves that money moved. An account proves identity. Neither gives an installed app a durable, portable answer to “what may this user run right now?”</p>
+        <p data-i18n="why.p2">Permit turns that answer into a signed artifact. The application verifies it locally with public keys it already trusts. A future management service may issue or refresh credentials, but authorization never depends on that service being reachable.</p>
+      </div>
+    </section>
+
+    <section class="principles" aria-label="Permit principles">
+      <article>
+        <span class="index">01</span>
+        <h3 data-i18n="principle.one.title">Exact bytes, no ambiguity</h3>
+        <p data-i18n="principle.one.body">Ed25519 signs the decoded payload bytes exactly. Verifiers never parse and re-serialize JSON before checking the signature.</p>
+      </article>
+      <article>
+        <span class="index">02</span>
+        <h3 data-i18n="principle.two.title">Rights outlive connectivity</h3>
+        <p data-i18n="principle.two.body">Long-lived entitlements stand on their own. Products add short-lived activation leases only when their policy needs online control.</p>
+      </article>
+      <article>
+        <span class="index">03</span>
+        <h3 data-i18n="principle.three.title">Policy without platform lock-in</h3>
+        <p data-i18n="principle.three.body">Permit sits beside Rivet, Glaze, native apps, or any other runtime. The application framework never owns commercial policy.</p>
+      </article>
+    </section>
+
+    <section id="models" class="section models">
+      <div class="section-heading">
+        <p class="eyebrow" data-i18n="models.eyebrow">ONE VOCABULARY, DISTINCT WINDOWS</p>
+        <h2 data-i18n="models.title">Model the product you actually sell.</h2>
+        <p data-i18n="models.lede">Use rights, update eligibility, and access to newly published features are independent facts.</p>
+      </div>
+      <div class="model-table" role="table" aria-label="Supported commercial models">
+        <div class="model-row model-header" role="row">
+          <span role="columnheader" data-i18n="models.model">Model</span>
+          <span role="columnheader" data-i18n="models.use">Use</span>
+          <span role="columnheader" data-i18n="models.updates">Updates</span>
+          <span role="columnheader" data-i18n="models.features">New features</span>
+        </div>
+        <div class="model-row" role="row">
+          <strong role="cell" data-i18n="models.perpetual">Perpetual purchase</strong>
+          <span role="cell" class="forever" data-i18n="models.forever">Forever</span>
+          <span role="cell" data-i18n="models.open">Open or bounded</span>
+          <span role="cell" data-i18n="models.open">Open or bounded</span>
+        </div>
+        <div class="model-row" role="row">
+          <strong role="cell">Surge Mac</strong>
+          <span role="cell" class="forever" data-i18n="models.forever">Forever</span>
+          <span role="cell" data-i18n="models.maintenance">Maintenance window</span>
+          <span role="cell" data-i18n="models.open">Open or bounded</span>
+        </div>
+        <div class="model-row" role="row">
+          <strong role="cell">Surge iOS</strong>
+          <span role="cell" class="forever" data-i18n="models.forever">Forever</span>
+          <span role="cell" data-i18n="models.open">Open or bounded</span>
+          <span role="cell" data-i18n="models.featureWindow">Feature window</span>
+        </div>
+        <div class="model-row" role="row">
+          <strong role="cell" data-i18n="models.subscription">Subscription</strong>
+          <span role="cell" data-i18n="models.untilEnd">Until term end</span>
+          <span role="cell" data-i18n="models.policy">By policy</span>
+          <span role="cell" data-i18n="models.policy">By policy</span>
+        </div>
+        <div class="model-row" role="row">
+          <strong role="cell" data-i18n="models.trial">Trial</strong>
+          <span role="cell" data-i18n="models.untilTrial">Until trial end</span>
+          <span role="cell" data-i18n="models.policy">By policy</span>
+          <span role="cell" data-i18n="models.policy">By policy</span>
+        </div>
+      </div>
+      <p class="model-note" data-i18n="models.note">Teams, named seats, devices, concurrent seats, bundles, editions, add-ons, and scalar capabilities remain separate claims — no overloaded “license count.”</p>
+    </section>
+
+    <section id="protocol" class="section protocol">
+      <div class="section-heading">
+        <p class="eyebrow" data-i18n="protocol.eyebrow">SMALL CORE, EXPLICIT LAYERS</p>
+        <h2 data-i18n="protocol.title">Verify first. Interpret second.</h2>
+      </div>
+      <div class="protocol-flow">
+        <article>
+          <span class="step-number">1</span>
+          <h3 data-i18n="protocol.one.title">Envelope</h3>
+          <p data-i18n="protocol.one.body">Decode the payload and signature. Reject unknown protocol versions and algorithms.</p>
+        </article>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+        <article>
+          <span class="step-number">2</span>
+          <h3 data-i18n="protocol.two.title">Trust</h3>
+          <p data-i18n="protocol.two.body">Resolve key_id through next, active, retired, or revoked trust-store state.</p>
+        </article>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+        <article>
+          <span class="step-number">3</span>
+          <h3 data-i18n="protocol.three.title">Signature</h3>
+          <p data-i18n="protocol.three.body">Verify Ed25519 over the exact payload bytes before claims are used.</p>
+        </article>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+        <article>
+          <span class="step-number">4</span>
+          <h3 data-i18n="protocol.four.title">Policy</h3>
+          <p data-i18n="protocol.four.body">Evaluate product, version, time windows, grants, installation, and optional lease.</p>
+        </article>
+      </div>
+      <div class="layer-stack">
+        <div class="layer entitlement">
+          <div><span>ENTITLEMENT</span><strong data-i18n="layers.entitlement">Durable commercial right</strong></div>
+          <code>product · edition · grants · seats</code>
+        </div>
+        <div class="layer activation">
+          <div><span>ACTIVATION</span><strong data-i18n="layers.activation">Optional installation lease</strong></div>
+          <code>installation_id · expires_at · grace</code>
+        </div>
+        <div class="layer trial">
+          <div><span>TRIAL</span><strong data-i18n="layers.trial">Independent evaluation right</strong></div>
+          <code>subject · limits · use_expires_at</code>
+        </div>
+      </div>
+    </section>
+
+    <section class="section rotation">
+      <div class="section-heading">
+        <p class="eyebrow" data-i18n="rotation.eyebrow">KEY ROTATION WITHOUT A FLAG DAY</p>
+        <h2 data-i18n="rotation.title">Ship tomorrow's trust before you need it.</h2>
+      </div>
+      <div class="key-timeline" aria-label="Trust store key states">
+        <div><span class="key-dot next"></span><b>next</b><small data-i18n="rotation.next">staged in clients</small></div>
+        <div><span class="key-dot active"></span><b>active</b><small data-i18n="rotation.active">signing now</small></div>
+        <div><span class="key-dot retired"></span><b>retired</b><small data-i18n="rotation.retired">historical cutoff</small></div>
+        <div><span class="key-dot revoked"></span><b>revoked</b><small data-i18n="rotation.revoked">rejected immediately</small></div>
+      </div>
+    </section>
+
+    <section id="start" class="section start">
+      <div>
+        <p class="eyebrow" data-i18n="start.eyebrow">RACKET REFERENCE IMPLEMENTATION</p>
+        <h2 data-i18n="start.title">From zero to verified.</h2>
+        <p data-i18n="start.lede">Install the package, generate a key pair, sign a payload, then verify it with only the public trust store.</p>
+        <a class="text-link" href="https://github.com/turinglambdaai/permit" data-i18n="start.source">Browse source and test vectors →</a>
+      </div>
+      <div class="terminal" aria-label="Permit command line example">
+        <div class="terminal-bar"><i></i><i></i><i></i><span>permit — shell</span></div>
+        <pre><code><span class="prompt">$</span> raco pkg install --auto \
+  --name permit https://github.com/turinglambdaai/permit.git
+
+<span class="prompt">$</span> raco permit keygen \
+  --key-id license-2026 \
+  --issuer com.example
+
+<span class="prompt">$</span> raco permit verify \
+  --trust-store trust-store.json \
+  --credential entitlement.permit.json
+
+<span class="ok">✓ verified entitlement</span></code></pre>
+      </div>
+    </section>
+
+    <section class="boundary">
+      <div>
+        <p class="eyebrow" data-i18n="boundary.eyebrow">A DELIBERATE BOUNDARY</p>
+        <h2 data-i18n="boundary.title">A protocol, not a billing company.</h2>
+      </div>
+      <p data-i18n="boundary.body">Permit v0.1 does not implement payments, accounts, pricing, tax, email, dashboards, hosted metering, or a license server. Future management systems may issue Permit credentials through this boundary; they do not belong in the verification core.</p>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-brand"><span class="brand-mark" aria-hidden="true">P</span><b>Permit</b></div>
+    <p data-i18n="footer.tagline">Signed product rights for independent software.</p>
+    <div class="footer-links">
+      <a href="https://github.com/turinglambdaai/permit">GitHub</a>
+      <a href="https://github.com/turinglambdaai/permit/blob/main/docs/protocol-v1.md">Protocol v1</a>
+      <a href="https://github.com/turinglambdaai/permit/blob/main/SECURITY.md">Security</a>
+      <a href="https://github.com/turinglambdaai/permit/blob/main/LICENSE">Apache-2.0</a>
+    </div>
+  </footer>
+
+  <script src="site.js"></script>
+</body>
+</html>
