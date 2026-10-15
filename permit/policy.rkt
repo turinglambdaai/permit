@@ -207,11 +207,20 @@
                            #:activation [activation #f]
                            #:trial-extensions [trial-extensions '()])
   (and (base-policy-ok? credential at installation-id activation version trial-extensions)
-       (window-allows? credential 'features_through published-at)
        (for/or ([grant (in-list (matching-grants credential product product-family))])
          (define features (hash-ref grant 'features))
-         (or (member feature features)
-             (member "*" features)))
+         (cond
+           ;; Explicitly named rights are durable and do not depend on the
+           ;; publication window. This is appropriate for separately sold
+           ;; feature packs or grandfathered capabilities.
+           [(member feature features) #t]
+           ;; A publication stream is what models future features that did not
+           ;; exist when the credential was signed. The product must supply an
+           ;; immutable publication timestamp; missing context fails closed.
+           [(equal? (hash-ref grant 'feature_policy) "published-through")
+            (and published-at
+                 (window-allows? credential 'features_through published-at))]
+           [else #f]))
        #t))
 
 (define (addon-entitled? credential
