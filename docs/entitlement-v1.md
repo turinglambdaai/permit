@@ -60,7 +60,7 @@ extensions
 
 A scope MUST name at least one product or product family. Identifier lists MUST NOT contain duplicates.
 
-Features and add-ons are boolean rights. Capabilities are signed scalar values. If several matching grants define the same capability with different values, a conforming policy engine must fail closed rather than silently depend on list order.
+`edition` is either a non-empty string or `null`; `null` lets a credential grant only an add-on/feature without pretending to change the product edition. Features and add-ons are boolean rights. Capabilities are finite signed scalar values. If several matching grants define the same capability with different values, a conforming policy engine must fail closed rather than silently depend on list order.
 
 ## Constraints
 
@@ -154,3 +154,10 @@ revision       = 3                 (increased)
 ```
 
 Applications may select the highest revision they have received. They must not claim that this revokes hidden or never-refreshed offline revisions. Timely downgrade or revocation requires a management mechanism such as activation leases or signed revocation state.
+
+
+## Scope of standard limits
+
+The standard `named_seats`, `device_activations`, and `concurrent_seats` limits apply to the logical entitlement as a whole. This is deliberate: a bundle sold under one commercial right normally shares its seat pool.
+
+If two products need independently administered seat pools or different lifecycle windows, issue separate entitlements. Do not overload one credential with ambiguous per-product allocation semantics.
