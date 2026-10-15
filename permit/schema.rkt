@@ -21,7 +21,7 @@
                   installation_id issued_at issuer lease_id not_before offline_grace_seconds
                   protocol type valid_until version))
 (define trial-extension-fields
-  '(credential_id entitlement_id extensions issued_at issuer not_before protocol type
+  '(credential_id trial_id extensions issued_at issuer not_before protocol type
                   use_expires_at version))
 (define grant-fields '(addons capabilities edition features scope))
 (define scope-fields '(product_families products))
