@@ -8,7 +8,13 @@
       "public_key": "MCowBQYDK2VwAyEA11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo=",
       "status": "active",
       "not_before": null,
-      "not_after": null
+      "not_after": null,
+      "purposes": [
+        "entitlement",
+        "trial",
+        "trial-extension",
+        "activation"
+      ]
     }
   }
 }
