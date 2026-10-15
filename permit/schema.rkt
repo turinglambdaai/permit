@@ -1,9 +1,8 @@
 #lang racket/base
 
-(require json
-         racket/list
-         racket/port
+(require racket/list
          racket/string
+         "private/json.rkt"
          "private/semver.rkt"
          "private/time.rkt")
 
@@ -292,14 +291,5 @@
 (define (parse-credential-payload payload)
   (unless (bytes? payload)
     (raise-argument-error 'parse-credential-payload "bytes?" payload))
-  (define in (open-input-bytes payload))
-  (define claims
-    (with-handlers ([exn:fail? (lambda (e)
-                                 (raise-arguments-error 'parse-credential-payload
-                                                        "payload is not valid UTF-8 JSON"
-                                                        "detail"
-                                                        (exn-message e)))])
-      (read-json in)))
-  (unless (regexp-match? #px"^\\s*$" (port->string in))
-    (fail 'parse-credential-payload "trailing data after JSON payload" "payload" payload))
-  (validate-credential-claims claims))
+  (validate-credential-claims
+   (read-json-bytes/strict 'parse-credential-payload payload)))
