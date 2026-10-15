@@ -65,7 +65,7 @@ raco permit keygen \
   --issuer com.example
 ```
 
-Keep the private key out of source control and application bundles. Sign the exact bytes of a payload file:
+Keep the private key out of source control and application bundles. Start from a schema-valid template under [`examples/`](examples/), then sign the exact bytes of the payload file:
 
 ```bash
 raco permit issue \
@@ -186,6 +186,7 @@ The deterministic corpus under [`test-vectors/v1`](test-vectors/v1) is the inter
 permit/
 ├── permit/                 # envelope, schema, policy, trust and CLI modules
 ├── docs/                   # normative protocol and management boundary
+├── examples/               # schema-valid commercial model payloads
 ├── test-vectors/v1/        # deterministic cross-language corpus
 ├── tests/                  # unit, policy and vector tests
 └── site/                   # bilingual product homepage
