@@ -50,6 +50,7 @@ extensions
     "product_families": ["automotive-tools"]
   },
   "edition": "pro",
+  "feature_policy": "explicit",
   "features": ["pcap-export"],
   "addons": ["report-pack"],
   "capabilities": {
@@ -60,7 +61,7 @@ extensions
 
 A scope MUST name at least one product or product family. Identifier lists MUST NOT contain duplicates.
 
-`edition` is either a non-empty string or `null`; `null` lets a credential grant only an add-on/feature without pretending to change the product edition. Features and add-ons are boolean rights. The reserved feature id `"*"` means “all product features whose introduction timestamp is allowed by `features_through`”; it is what makes a future-feature subscription possible without reissuing the credential for every new feature ID. Explicit feature IDs remain useful for individually sold capabilities. Capabilities are finite signed scalar values. If several matching grants define the same capability with different values, a conforming policy engine must fail closed rather than silently depend on list order.
+`edition` is either a non-empty string or `null`; `null` lets a credential grant only an add-on/feature without pretending to change the product edition. `feature_policy` is either `explicit` or `published-through`. An `explicit` grant authorizes only the IDs listed in `features`, and those named rights are durable independently of `features_through`. A `published-through` grant MUST leave `features` empty and authorizes product features dynamically from their immutable publication timestamps and the credential-wide `features_through` cutoff. If a product needs both behaviors, it composes two grants for the same scope. Add-ons remain explicit boolean rights. Capabilities are finite signed scalar values. If several matching grants define the same capability with different values, a conforming policy engine must fail closed rather than silently depend on list order.
 
 ## Constraints
 
@@ -94,7 +95,8 @@ features_through = null
 use_expires_at   = null
 updates_through  = maintenance_end
 features_through = maintenance_end
-features         = ["*"]
+feature_policy   = "published-through"
+features         = []
 ```
 
 An installed version and the paid features introduced before the cutoff remain usable after the cutoff. Mirroring the cutoff into `features_through` prevents a manually copied newer binary from bypassing the maintenance boundary.
@@ -104,7 +106,8 @@ An installed version and the paid features introduced before the cutoff remain u
 ```text
 use_expires_at   = null
 features_through = feature_window_end
-features         = ["*"]
+feature_policy   = "published-through"
+features         = []
 ```
 
 Application updates may continue forever, but paid features introduced before the cutoff remain owned after the cutoff. A later feature ID does not need to have existed when the credential was originally signed.
@@ -170,7 +173,7 @@ If two products need independently administered seat pools or different lifecycl
 
 A signed constraint is never silently ignored because the caller omitted evaluation metadata:
 
-- if `features_through` is finite, feature authorization requires the feature introduction timestamp;
+- a `published-through` feature grant always requires the feature introduction timestamp; `features_through` then decides whether that future feature belongs to the user;
 - if `version_policy.min` or `max` is set, version-sensitive authorization requires the current/target SemVer;
 - update authorization always requires the release publication timestamp.
 
