@@ -89,7 +89,7 @@
                             'status
                             "active"
                             'purposes
-                            '("entitlement" "trial" "trial-extension" "activation")
+                            effective-purposes
                             'not_before
                             'null
                             'not_after
