@@ -30,7 +30,7 @@ An `activation` contains exactly:
 
 ## Exact snapshot binding
 
-An activation is usable only when all three entitlement references match the entitlement being evaluated:
+An activation is usable only when its `issuer` matches the entitlement issuer and all three entitlement references match the entitlement being evaluated:
 
 - `entitlement_id`
 - `entitlement_revision`
