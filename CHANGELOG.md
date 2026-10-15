@@ -4,6 +4,8 @@
 
 ### Added
 
+- Add repeatable `raco permit keygen --purpose ...` for least-privilege signing keys while preserving the all-purpose default for small deployments.
+
 - Split the Racket API into a curated client facade and explicit `permit/issuer` signing surface.
 - Add guarded `issue-credential` checks for issuer, key status/purpose/window, and private/public key correspondence.
 - Add privacy-preserving random installation/trial identifiers.
