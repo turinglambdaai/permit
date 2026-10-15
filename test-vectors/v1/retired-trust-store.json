@@ -1,0 +1,14 @@
+{
+  "protocol": "permit-trust-store",
+  "version": 1,
+  "issuer": "example.test",
+  "keys": {
+    "rfc8032-test-1": {
+      "algorithm": "Ed25519",
+      "public_key": "MCowBQYDK2VwAyEA11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo=",
+      "status": "retired",
+      "not_before": "2026-01-01T00:00:00Z",
+      "not_after": "2026-12-31T23:59:59Z"
+    }
+  }
+}
