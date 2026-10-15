@@ -2,6 +2,7 @@
 
 (require json
          racket/file
+         racket/list
          "credential.rkt"
          "private/json.rkt"
          "private/time.rkt"
@@ -190,4 +191,4 @@
    effective-expiry
    remaining
    updated-state
-   (map verified-credential-id matching)))
+   (remove-duplicates (map verified-credential-id matching) string=?)))
