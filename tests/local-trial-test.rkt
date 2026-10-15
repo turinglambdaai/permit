@@ -1,6 +1,7 @@
 #lang racket/base
 
-(require rackunit
+(require json
+         rackunit
          racket/port
          "../permit/main.rkt")
 
@@ -54,31 +55,50 @@
 (check-equal? (local-trial-last-seen-at (local-trial-evaluation-state rollback))
               "2026-01-01T00:01:30Z")
 
-(define (extension id trial-id issuer issued-at expires-at)
-  (verified-credential
-   (hasheq 'protocol "permit"
+(define-values (test-private-key test-public-key)
+  (generate-ed25519-keypair))
+
+(define test-store
+  (jsexpr->trust-store
+   (hasheq 'protocol "permit-trust-store"
            'version 1
-           'type "trial-extension"
-           'credential_id id
-           'trial_id trial-id
-           'issuer issuer
-           'issued_at issued-at
-           'not_before 'null
-           'use_expires_at expires-at
-           'extensions (hasheq))
-   #"unit-test-only"
-   "unit-test"))
+           'issuer "example.test"
+           'keys
+           (hasheq 'trial-test
+                   (hasheq 'algorithm "Ed25519"
+                           'public_key (public-key->base64 test-public-key)
+                           'status "active"
+                           'purposes '("trial-extension")
+                           'not_before 'null
+                           'not_after 'null)))))
+
+(define (extension id trial-id issued-at expires-at)
+  (define claims
+    (hasheq 'protocol "permit"
+            'version 1
+            'type "trial-extension"
+            'credential_id id
+            'trial_id trial-id
+            'issuer "example.test"
+            'issued_at issued-at
+            'not_before 'null
+            'use_expires_at expires-at
+            'extensions (hasheq)))
+  (define payload
+    (call-with-output-bytes
+     (lambda (out) (write-json claims out))))
+  (verify-credential
+   (make-signed-envelope "trial-test" payload test-private-key)
+   test-store))
 
 (define good-extension
   (extension "ext_01"
              "trial_test_01"
-             "example.test"
              "2026-01-01T00:01:00Z"
              "2026-01-01T00:05:00Z"))
 (define wrong-trial-extension
   (extension "ext_other"
              "trial_other"
-             "example.test"
              "2026-01-01T00:01:00Z"
              "2026-01-01T00:10:00Z"))
 
