@@ -289,6 +289,37 @@
                     #:published-at "2027-10-16T00:00:00Z"
                     #:at "2030-01-01T00:00:00Z"))
 
+
+(define wildcard-grant
+  (hasheq 'scope
+          (hasheq 'products '("gptp-studio") 'product_families '())
+          'edition
+          "pro"
+          'features
+          '("*")
+          'addons
+          '()
+          'capabilities
+          (hasheq)))
+
+(define future-feature-window
+  (issue
+   (entitlement "cred_future_feature_window"
+                (constraints #:features "2027-10-15T23:59:59Z")
+                #:grants (list wildcard-grant))))
+(check-true
+ (feature-entitled? future-feature-window
+                    "gptp-studio"
+                    "agent-mode-added-later"
+                    #:published-at "2027-09-01T00:00:00Z"
+                    #:at "2030-01-01T00:00:00Z"))
+(check-false
+ (feature-entitled? future-feature-window
+                    "gptp-studio"
+                    "agent-mode-added-later"
+                    #:published-at "2027-11-01T00:00:00Z"
+                    #:at "2030-01-01T00:00:00Z"))
+
 ;; True subscription.
 (define subscription
   (issue
