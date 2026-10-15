@@ -2,9 +2,9 @@
 
 (require json
          racket/file
-         "../permit/credential.rkt"
-         "../permit/private/json.rkt"
-         "../permit/private/time.rkt"
+         "credential.rkt"
+         "private/json.rkt"
+         "private/time.rkt"
          "identity.rkt")
 
 (provide (struct-out local-trial)
