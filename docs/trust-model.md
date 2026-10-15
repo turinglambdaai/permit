@@ -27,9 +27,9 @@ The trust store is application configuration delivered through the application's
 
 ## Key status
 
-- `next` — pre-distributed key intended for future issuance;
+- `next` — pre-distributed key intended for future issuance; it MUST have a non-null `not_before`;
 - `active` — normal issuance key;
-- `retired` — no new issuance intended, but old credentials remain authentic;
+- `retired` — no new issuance intended, but old credentials remain authentic; it MUST have a non-null `not_after` issuance cutoff;
 - `revoked` — compromise or explicit distrust; all credentials under this key fail verification.
 
 ## Issuance window
@@ -75,3 +75,10 @@ Permit credential-signing keys SHOULD be distinct from:
 Compromise of one trust domain should not automatically compromise another.
 
 Production private keys belong in a secure operator environment such as an OS secure store, HSM, managed signing service, or a dedicated key-custody tool. They do not belong in source control.
+
+
+## Key-id alias rule
+
+Protocol v1 does not include `key_id` inside the signed payload; it is an outer trust selector. A trust store therefore MUST NOT place the same Ed25519 public key under multiple key ids with different metadata. The reference implementation rejects duplicate public-key aliases.
+
+With unique public keys per key id, changing `key_id` to any other trust entry causes signature verification to fail.
