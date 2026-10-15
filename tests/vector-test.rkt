@@ -14,9 +14,9 @@
 (define trust-path (build-path vector-root "trust-store.json"))
 
 (define credential
-  (verify-credential credential-path (read-trust-store trust-path) #:at "2026-10-15T00:00:00Z"))
+  (verify-credential credential-path (read-trust-store trust-path)))
 
-(check-equal? (verified-credential-id credential) "ent_vector_01")
+(check-equal? (verified-credential-id credential) "cred_vector_01")\n(check-equal? (verified-credential-entitlement-id credential) "ent_vector_01")\n(check-equal? (verified-credential-revision credential) 0)
 (check-equal? (verified-credential-payload credential) (file->bytes payload-path))
 (check-true (update-entitled? credential
                               "gptp-studio"
