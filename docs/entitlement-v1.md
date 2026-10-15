@@ -33,7 +33,7 @@ extensions
 }
 ```
 
-`id` is the stable identity. `display` is optional human-facing metadata and may be `null`. Typical subject types include `person`, `organization`, `account`, `device`, `installation`, and `anonymous`. Products must not use `display` as an identity key.
+`id` is the stable identity. `display` is optional human-facing metadata and may be `null`. Protocol v1 defines exactly these subject types: `person`, `organization`, `account`, `device`, `installation`, and `anonymous`. Unknown subject types fail closed. Products must not use `display` as an identity key.
 
 ### Channel
 
