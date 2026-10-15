@@ -4,6 +4,7 @@
 
 ### Added
 
+- Document the durable sibling-library integration contract for products that compose Permit with Rivet or Glaze.
 - Add repeatable `raco permit keygen --purpose ...` for least-privilege signing keys while preserving the all-purpose default for small deployments.
 
 - Split the Racket API into a curated client facade and explicit `permit/issuer` signing surface.

@@ -30,7 +30,7 @@ Permit composes beside an application framework:
               runtime / update   product rights
 ```
 
-Rivet and Glaze do not depend on Permit. Update-artifact signing and Permit credential signing also use separate keys and trust policies.
+Rivet and Glaze do not depend on Permit. Update-artifact signing and Permit credential signing also use separate keys and trust policies. See the [framework integration contract](docs/framework-integration.md) for the durable dependency and responsibility boundaries.
 
 ## What it models
 
@@ -128,7 +128,7 @@ Protocol v1 includes:
 - multi-key trust stores with `next`, `active`, `retired`, and `revoked` states plus per-key credential purposes
 - deterministic cross-language test vectors
 
-Start with the [normative Protocol v1 specification](docs/protocol-v1.md), then see [entitlements](docs/entitlement-v1.md), [activation](docs/activation-v1.md), [trust](docs/trust-model.md), [lifecycle](docs/lifecycle.md), [compatibility](docs/compatibility.md), [threat model](docs/threat-model.md), and the [management boundary](docs/management-boundaries.md).
+Start with the [normative Protocol v1 specification](docs/protocol-v1.md), then see [entitlements](docs/entitlement-v1.md), [activation](docs/activation-v1.md), [trust](docs/trust-model.md), [lifecycle](docs/lifecycle.md), [compatibility](docs/compatibility.md), [threat model](docs/threat-model.md), the [framework integration contract](docs/framework-integration.md), and the [management boundary](docs/management-boundaries.md).
 
 ## Client and issuer APIs
 
