@@ -126,6 +126,11 @@
           "feature id * is reserved; use feature_policy=published-through"
           "features"
           features))
+  (when (and (equal? feature-policy "published-through") (pair? features))
+    (fail who
+          "published-through grants must leave features empty; compose a separate explicit grant"
+          "features"
+          features))
   (expect who
           unique-string-list?
           "list of unique non-empty strings"
