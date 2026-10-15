@@ -470,3 +470,72 @@
                 #:issued-at "2030-01-01T00:00:00Z")))
 (check-false (credential-usable? future #:at "2029-12-31T23:59:59Z"))
 (check-true (credential-usable? future #:at "2030-01-01T00:00:00Z"))
+
+
+;; Add-on-only grants do not need to invent an edition.
+(define addon-only-grant
+  (hasheq 'scope
+          (hasheq 'products '("gptp-studio") 'product_families '())
+          'edition
+          'null
+          'features
+          '()
+          'addons
+          '("hardware-pack")
+          'capabilities
+          (hasheq)))
+(define addon-only
+  (issue
+   (entitlement "cred_addon_only"
+                (constraints)
+                #:grants (list addon-only-grant))))
+(check-true (addon-entitled? addon-only "gptp-studio" "hardware-pack"))
+(check-false (edition-entitled? addon-only "gptp-studio" "pro"))
+
+;; Trust metadata may not alias one public key under several key ids, because
+;; key_id is an outer selector rather than signed business data.
+(define duplicate-key-entry (key-entry))
+(check-exn
+ #rx"same public key"
+ (lambda ()
+   (jsexpr->trust-store
+    (hasheq 'protocol
+            "permit-trust-store"
+            'version
+            1
+            'issuer
+            "example.test"
+            'keys
+            (hasheq 'key-a duplicate-key-entry
+                    'key-b duplicate-key-entry)))))
+
+(check-exn
+ #rx"next key requires"
+ (lambda ()
+   (jsexpr->trust-store (store-value-with (key-entry #:status "next")))))
+
+(check-exn
+ #rx"retired key requires"
+ (lambda ()
+   (jsexpr->trust-store (store-value-with (key-entry #:status "retired")))))
+
+;; Capability numbers must be finite JSON-style numbers.
+(check-exn
+ #rx"invalid capability value"
+ (lambda ()
+   (validate-credential-claims
+    (entitlement
+     "cred_infinite_capability"
+     (constraints)
+     #:grants
+     (list
+      (hasheq 'scope
+              (hasheq 'products '("gptp-studio") 'product_families '())
+              'edition
+              'null
+              'features
+              '()
+              'addons
+              '()
+              'capabilities
+              (hasheq 'bad +inf.0)))))))
