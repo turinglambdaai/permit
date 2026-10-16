@@ -213,7 +213,7 @@ raco make permit/main.rkt permit/cli.rkt permit-doc/scribblings/permit.scrbl
 raco test -p permit
 ```
 
-The deterministic corpus under [`test-vectors/v1`](test-vectors/v1) is the interoperability contract for other language implementations.
+The deterministic corpus under [`test-vectors/v1`](test-vectors/v1) is the interoperability contract for other language implementations; the C runner in [`conformance/c`](conformance/c) executes it as an independent implementation.
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete change checklist and [ROADMAP.md](ROADMAP.md) for the evidence required on the path to 1.0.
 
 ## Repository structure
@@ -225,6 +225,7 @@ permit/
 ├── docs/                   # architecture, normative protocol and boundaries
 ├── examples/               # schema-valid commercial model payloads
 ├── test-vectors/v1/        # deterministic cross-language conformance corpus
+├── conformance/c/          # standalone C conformance runner over the corpus
 ├── permit-test/            # unit, integration, documentation and vector tests
 └── site/                   # bilingual product homepage
 ```

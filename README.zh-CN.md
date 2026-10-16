@@ -213,7 +213,7 @@ raco make permit/main.rkt permit/cli.rkt permit-doc/scribblings/permit.scrbl
 raco test -p permit
 ```
 
-[`test-vectors/v1`](test-vectors/v1) 下的确定性语料是其他语言实现的互操作契约。
+[`test-vectors/v1`](test-vectors/v1) 下的确定性语料是其他语言实现的互操作契约；[`conformance/c`](conformance/c) 中的 C 运行器即以独立实现身份执行该语料。
 完整变更门槛见 [CONTRIBUTING.md](CONTRIBUTING.md)，走向 1.0 所需的证据见 [ROADMAP.md](ROADMAP.md)。
 
 ## 仓库结构
@@ -225,6 +225,7 @@ permit/
 ├── docs/                   # 架构、规范协议与边界
 ├── examples/               # 已通过 schema 校验的商业模型模板
 ├── test-vectors/v1/        # 确定性跨语言一致性语料
+├── conformance/c/          # 针对语料的独立 C 一致性运行器
 ├── permit-test/            # 单元、集成、文档与向量测试
 └── site/                   # 双语产品主页
 ```
