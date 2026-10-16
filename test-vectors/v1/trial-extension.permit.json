@@ -1,0 +1,7 @@
+{
+  "algorithm": "Ed25519",
+  "key_id": "rfc8032-test-1",
+  "payload": "ewogICJwcm90b2NvbCI6ICJwZXJtaXQiLAogICJ2ZXJzaW9uIjogMSwKICAidHlwZSI6ICJ0cmlhbC1leHRlbnNpb24iLAogICJjcmVkZW50aWFsX2lkIjogImNyZWRfdHJpYWxfZXh0ZW5zaW9uX3ZlY3Rvcl8wMSIsCiAgInRyaWFsX2lkIjogInRyaWFsX3ZlY3Rvcl8wMSIsCiAgImlzc3VlciI6ICJleGFtcGxlLnRlc3QiLAogICJpc3N1ZWRfYXQiOiAiMjAyNi0xMC0yMFQwMDowMDowMFoiLAogICJub3RfYmVmb3JlIjogbnVsbCwKICAidXNlX2V4cGlyZXNfYXQiOiAiMjAyNi0xMS0wNVQwMDowMDowMFoiLAogICJleHRlbnNpb25zIjoge30KfQo=",
+  "permit_version": 1,
+  "signature": "tC8Ag4UdoeaoDsjC0rWXCe5x/wwjR4suPhhIVhooUeBbNJgq4sX2yg2arcvyaxpbGHT7iQLg4qS/0L7rSX9kBg=="
+}

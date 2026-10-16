@@ -55,7 +55,7 @@ cannot mint a perpetual entitlement. The time windows constrain the
 credential's authenticated @tt{issued_at}, not the wall clock at
 verification — retiring a key never kills a perpetual entitlement.
 
-@defproc[(read-trust-store [source (or/c path-string? input-port? bytes?)])
+@defproc[(read-trust-store [source (or/c path-string? input-port?)])
          trust-store?]{
 Parses and validates a trust store document. Unknown key statuses,
 missing purposes, and wrong algorithms are rejected here.
@@ -78,8 +78,7 @@ bytes first and only then parses authorization claims — the verifier
 never re-serializes JSON, which removes canonicalization ambiguity
 across languages.
 
-@defproc[(verify-credential [source (or/c path-string? input-port? bytes?
-                                          permit-envelope?)]
+@defproc[(verify-credential [source (or/c path-string? input-port?)]
                             [store trust-store?])
          verified-credential?]{
 Verifies signature, trust key, issuer, key purpose, and key issuance
@@ -103,13 +102,13 @@ The claims accessors (all @racket[(-> verified-credential? ...)]):
 @defproc[(verified-credential-issued-at [c verified-credential?]) string?]{}
 @defproc[(verified-credential-entitlement-id [c verified-credential?]) (or/c string? #f)]{}
 @defproc[(verified-credential-revision [c verified-credential?]) exact-nonnegative-integer?]{}
-@defproc[(verified-credential-subject-type [c verified-credential?]) string?]{}
-@defproc[(verified-credential-subject-id [c verified-credential?]) string?]{}
+@defproc[(verified-credential-subject-type [c verified-credential?]) (or/c string? #f)]{}
+@defproc[(verified-credential-subject-id [c verified-credential?]) (or/c string? #f)]{}
 @defproc[(verified-credential-subject-display [c verified-credential?]) (or/c string? #f)]{
 The customer-facing name (an email address, for example). Display only —
 never an authorization input.
 }
-@defproc[(verified-credential-channel [c verified-credential?]) string?]{}
+@defproc[(verified-credential-channel [c verified-credential?]) (or/c string? #f)]{}
 @defproc[(verified-credential-use-expires-at [c verified-credential?]) (or/c string? #f)]{
 Canonical UTC timestamp; @racket[#f] means the right does not expire.
 }
@@ -142,6 +141,22 @@ if the entitlement demands one.
 The full verdict: @racket['usable?], @racket['reasons] (a list of
 symbols such as @racket['use-expired] or @racket['not-active-yet]), and
 @racket['effective_use_expires_at] after trial extensions.
+}
+
+@defproc[(activation-valid? [entitlement verified-credential?]
+                            [activation verified-credential?]
+                            [installation-id string?]
+                            [#:at at string? (current-rfc3339)])
+         boolean?]{
+Checks that a lease is current and bound to the exact entitlement id,
+revision, credential id, issuer, and installation.
+}
+
+@defproc[(trial-extension-valid? [trial verified-credential?]
+                                 [extension verified-credential?]
+                                 [#:at at string? (current-rfc3339)])
+         boolean?]{
+Checks the signed relationship and activation time of a trial extension.
 }
 
 @defproc[(edition-entitled? [c verified-credential?]
@@ -198,8 +213,9 @@ concurrent seats) from the credential's constraints.
 SemVer 2.0 check against the credential's version bounds.
 }
 
-@defproc[(select-latest-entitlement [credentials (listof verified-credential?)])
-         (or/c verified-credential? #f)]{
+@defproc[(select-latest-entitlement
+          [credentials (and/c (listof verified-credential?) pair?)])
+         verified-credential?]{
 Deterministic replacement among credentials actually received: highest
 @tt{revision} for the same @tt{entitlement_id}. This is replacement,
 not offline revocation.
@@ -214,22 +230,33 @@ never exports private-key operations.
 
 @defproc[(generate-ed25519-keypair)
          (values pk-key? pk-key?)]{}
-@defproc[(read-ed25519-private-key [source (or/c path-string? input-port? bytes?)]) pk-key?]{}
-@defproc[(read-ed25519-public-key [source (or/c path-string? input-port? bytes?)]) pk-key?]{}
+@defproc[(read-ed25519-private-key [source path-string?]) pk-key?]{}
+@defproc[(read-ed25519-public-key [source path-string?]) pk-key?]{}
 @defproc[(ed25519-private-key->der [key pk-key?]) bytes?]{}
 @defproc[(ed25519-public-key->der [key pk-key?]) bytes?]{}
 @defproc[(public-key->base64 [key pk-key?]) string?]{}
+
+@defproc[(issued-credential? [value any/c]) boolean?]{
+Recognizes the opaque result of @racket[issue-credential].
+}
 
 @defproc[(issue-credential [payload bytes?]
                            [private-key pk-key?]
                            [key-id string?]
                            [store trust-store?])
-         permit-envelope?]{
+         issued-credential?]{
 The safe issuance path: schema-validates the payload, pins issuer,
 active key status, key purpose, and the key's issuance window, and
 verifies the private key matches the trust-store public key. The
 @racket[raco permit issue] command goes through this function;
 @racket[raco permit sign] is the deliberate low-level escape hatch.
+}
+
+@defproc[(write-issued-credential [credential issued-credential?]
+                                  [destination (or/c path-string? output-port?)])
+         void?]{
+Serializes an issued credential as its Protocol v1 JSON envelope. This is the
+supported programmatic path from safe issuance to storage or delivery.
 }
 
 @section{Command line}
@@ -257,11 +284,16 @@ A random, privacy-preserving installation identifier — not a hardware
 fingerprint.
 }
 
-@defproc[(make-local-trial [#:duration-seconds duration-seconds exact-positive-integer?]
-                           [#:now now string? (current-rfc3339)]) local-trial?]{}
+@defproc[(make-local-trial
+          [#:duration-seconds duration-seconds exact-positive-integer? (* 14 24 60 60)]
+          [#:at at string? (current-rfc3339)]
+          [#:id id string? (generate-local-trial-id)])
+         local-trial?]{}
 @defproc[(evaluate-local-trial [trial local-trial?]
+                               [#:at at string? (current-rfc3339)]
                                [#:extensions extensions (listof verified-credential?) '()]
-                               [#:now now string? (current-rfc3339)])
+                               [#:issuer issuer (or/c string? #f) #f]
+                               [#:rollback-tolerance-seconds tolerance exact-nonnegative-integer? 300])
          local-trial-evaluation?]{
 Evaluates the trial against the stored clock high-water mark and any
 verified @tt{trial-extension} credentials. The result carries the

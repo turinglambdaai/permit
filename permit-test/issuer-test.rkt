@@ -75,6 +75,16 @@
                     "issuer-2026"
                     store))
 (define verified (verify-credential envelope store))
+(check-true (issued-credential? envelope))
+(define serialized-envelope
+  (call-with-output-bytes
+   (lambda (out)
+     (write-issued-credential envelope out))))
+(check-equal? (verified-credential-id
+               (verify-credential (open-input-bytes serialized-envelope) store))
+              "cred_issue_test")
+(check-exn exn:fail:contract?
+           (lambda () (write-issued-credential 'not-a-credential (open-output-bytes))))
 (check-equal? (verified-credential-id verified) "cred_issue_test")
 (check-equal? (verified-credential-entitlement-id verified) "ent_issue_test")
 (check-equal? (verified-credential-subject-id verified) "cus_test")

@@ -48,6 +48,8 @@ Protocol v1 用一套词汇覆盖常见商业模型，但不把价格或支付�
 
 ## 快速开始
 
+如果你第一次接触签名凭证，请先看[从零开始指南](docs/getting-started.zh-CN.md)。它会说明哪些文件必须保密、哪些文件需要随应用发布，以及“验证凭证”和“判断产品权限”为什么是两个步骤。
+
 安装 Racket 包：
 
 ```bash
@@ -91,8 +93,8 @@ raco permit verify \
 raco permit check \
   --trust-store trust-store.json \
   --credential entitlement.permit.json \
-  --product gptp-studio \
-  --feature pcap-export \
+  --product example-app \
+  --feature example-feature \
   --feature-published-at 2026-10-01T00:00:00Z \
   --version 2.0.0
 ```
@@ -128,7 +130,7 @@ Protocol v1 包含：
 - 支持 `next`、`active`、`retired`、`revoked` 状态并限制每把密钥签名用途的多密钥信任库
 - 确定性的跨语言测试向量
 
-从[规范性的 Protocol v1 文档](docs/protocol-v1.md)开始，再查看[权益模型](docs/entitlement-v1.md)、[激活租约](docs/activation-v1.md)、[信任模型](docs/trust-model.md)、[生命周期](docs/lifecycle.md)、[兼容规则](docs/compatibility.md)、[威胁模型](docs/threat-model.md)、[框架集成契约](docs/framework-integration.md)和[管理边界](docs/management-boundaries.md)。
+第一次使用请从[从零开始指南](docs/getting-started.zh-CN.md)开始。需要参与实现时，先阅读[架构地图](docs/architecture.md)；需要实现协议时，再阅读[规范性的 Protocol v1 文档](docs/protocol-v1.md)、[权益模型](docs/entitlement-v1.md)、[激活租约](docs/activation-v1.md)、[信任模型](docs/trust-model.md)、[生命周期](docs/lifecycle.md)、[兼容规则](docs/compatibility.md)、[威胁模型](docs/threat-model.md)、[框架集成契约](docs/framework-integration.md)和[管理边界](docs/management-boundaries.md)。
 
 ## 客户端与签发端 API
 
@@ -157,8 +159,8 @@ Protocol v1 包含：
   (verify-credential "entitlement.permit.json" store))
 
 (when (feature-entitled? entitlement
-                         "gptp-studio"
-                         "pcap-export"
+                         "example-app"
+                         "example-feature"
                          #:published-at "2026-10-01T00:00:00Z")
   (enable-pcap-export!))
 ```
@@ -207,21 +209,23 @@ Permit v0.1 **不实现**支付、客户账号、邮件、定价、税务、管�
 
 ```bash
 raco pkg install --auto --no-docs --link
-raco make permit/main.rkt permit/cli.rkt
-raco test permit-test/
+raco make permit/main.rkt permit/cli.rkt permit-doc/scribblings/permit.scrbl
+raco test -p permit
 ```
 
 [`test-vectors/v1`](test-vectors/v1) 下的确定性语料是其他语言实现的互操作契约。
+完整变更门槛见 [CONTRIBUTING.md](CONTRIBUTING.md)，走向 1.0 所需的证据见 [ROADMAP.md](ROADMAP.md)。
 
 ## 仓库结构
 
 ```text
 permit/
-├── permit/                 # 信封、schema、策略、信任库和 CLI
-├── docs/                   # 规范协议与管理边界
+├── permit/                 # 公共门面、实现与 CLI
+├── permit-doc/             # 随包安装的 Scribble 参考手册
+├── docs/                   # 架构、规范协议与边界
 ├── examples/               # 已通过 schema 校验的商业模型模板
-├── test-vectors/v1/        # 确定性跨语言语料
-├── permit-test/                  # 单元、策略与向量测试
+├── test-vectors/v1/        # 确定性跨语言一致性语料
+├── permit-test/            # 单元、集成、文档与向量测试
 └── site/                   # 双语产品主页
 ```
 

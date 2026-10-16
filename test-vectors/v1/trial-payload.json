@@ -1,0 +1,51 @@
+{
+  "protocol": "permit",
+  "version": 1,
+  "type": "trial",
+  "credential_id": "cred_trial_vector_01",
+  "entitlement_id": "trial_vector_01",
+  "revision": 0,
+  "issuer": "example.test",
+  "issued_at": "2026-10-15T00:00:00Z",
+  "not_before": null,
+  "subject": {
+    "type": "anonymous",
+    "id": "trial-subject-vector",
+    "display": null
+  },
+  "channel": "trial",
+  "grants": [
+    {
+      "scope": {
+        "products": [
+          "example-desktop"
+        ],
+        "product_families": []
+      },
+      "edition": "pro",
+      "features": [
+        "export"
+      ],
+      "addons": [],
+      "capabilities": {},
+      "feature_policy": "explicit"
+    }
+  ],
+  "constraints": {
+    "use_expires_at": "2026-10-29T00:00:00Z",
+    "updates_through": null,
+    "features_through": null,
+    "version_policy": {
+      "min": null,
+      "max": null
+    },
+    "limits": {
+      "named_seats": null,
+      "device_activations": null,
+      "concurrent_seats": null
+    },
+    "installation_id": null,
+    "activation_required": false
+  },
+  "extensions": {}
+}

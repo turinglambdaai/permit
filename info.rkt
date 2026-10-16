@@ -2,7 +2,7 @@
 
 (define collection 'multi)
 (define deps '("base" "crypto-lib" "net-lib"))
-(define build-deps '("rackunit-lib"))
+(define build-deps '("rackunit-lib" "racket-doc" "scribble-lib"))
 (define pkg-desc "Offline-verifiable, online-manageable signed entitlements")
 (define version "0.1")
 (define pkg-authors '(turinglambdaai))

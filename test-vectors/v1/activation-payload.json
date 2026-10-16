@@ -1,0 +1,17 @@
+{
+  "protocol": "permit",
+  "version": 1,
+  "type": "activation",
+  "credential_id": "cred_activation_vector_01",
+  "entitlement_credential_id": "cred_managed_vector_01",
+  "entitlement_id": "ent_managed_vector_01",
+  "entitlement_revision": 2,
+  "issuer": "example.test",
+  "issued_at": "2026-11-01T00:00:00Z",
+  "not_before": null,
+  "installation_id": "ins_vector_A",
+  "lease_id": "lease_vector_01",
+  "valid_until": "2028-01-01T00:00:00Z",
+  "offline_grace_seconds": 3600,
+  "extensions": {}
+}

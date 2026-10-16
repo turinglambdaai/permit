@@ -4,6 +4,8 @@
 
 Permit is a framework-neutral commercial-entitlement protocol and Racket reference implementation. The default `permit` facade is client-only; issuer operations live under `permit/issuer`. Keep its dependency direction independent: products may use Permit beside Rivet or Glaze; Rivet and Glaze must not depend on Permit.
 
+Before changing code, read `docs/architecture.md`. Treat `docs/protocol-v1.md` as normative for wire behavior and this file as the compact implementation checklist.
+
 ## Invariants
 
 - Ed25519 signs the exact decoded payload bytes. Never replace this with “parse then canonicalize”.
@@ -27,5 +29,14 @@ Do not add payment processing, accounts, email, dashboards, pricing, tax, hosted
 - Update `docs/protocol-v1.md` for every wire-format or normative semantic change.
 - Add or update deterministic test vectors for every signing-format change.
 - Preserve older vectors unless the protocol version intentionally changes.
-- Run `raco make permit/main.rkt permit/cli.rkt`, `raco test permit-test/`, and a clean package install before release.
+- Keep the CLI thin: commands call library operations and do not reimplement schema, trust, or policy rules.
+- Add regression tests for every behavior change. Add language-neutral vectors when the behavior could diverge across implementations.
+- Use public-facade tests for supported API behavior and module-level tests for internal edge cases.
+- Run `raco make permit/main.rkt permit/cli.rkt permit-doc/scribblings/permit.scrbl`, `raco test -p permit`, vector regeneration with a clean diff, and a clean package install before release.
 - Never commit private production key material. Test keys must be clearly marked public and deterministic.
+
+## Handoff standard
+
+Leave the repository understandable without chat history. A completed change includes the relevant code, tests, user-facing documentation, normative text when semantics change, and a concise changelog entry. Do not leave protocol decisions only in comments, issues, or conversation transcripts.
+
+Do not claim compatibility, security, or production readiness from unit tests alone. Record the concrete platforms, Racket versions, vectors, package-install checks, or external implementation evidence actually exercised.
