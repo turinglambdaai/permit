@@ -38,6 +38,24 @@ If an extension becomes security-critical across products, it should graduate in
 
 Permit's Racket package may evolve during 0.x, but the project should prefer additive APIs after Protocol v1 freezes. Product code should use verified credential objects and policy functions rather than reading raw JSON hashes.
 
+### Support and deprecation windows
+
+- The Racket versions exercised by the CI matrix are the supported floor for
+  each release; older Racket versions may work but carry no expectation.
+- During 0.x a minor release may change the Racket API. Every breaking
+  change is listed in the changelog with its replacement and a migration
+  note in the affected guide or manual page.
+- When a public name is deprecated, the changelog marks it in one release,
+  and it is removed no earlier than the following release. Deprecated names
+  keep working, including their security behavior, until removal.
+- Facade changes are slower than internal ones: `(require permit)` and
+  `(require permit/issuer)` are the two public module paths, and the CLI
+  surface documented by `raco permit help` is public operator behavior.
+  Everything else is internal in 0.x even when Racket allows requiring it.
+- Protocol v1 vectors and wire semantics are governed by the wire-stability
+  rules above, not by Racket package versioning; API changes never
+  retroactively invalidate existing vectors.
+
 ## Cross-language conformance
 
 The corpus under `test-vectors/v1/` is part of the interoperability contract. Other implementations should verify the exact payload bytes, signature, trust rules, and positive/negative policy cases before claiming Protocol v1 compatibility.

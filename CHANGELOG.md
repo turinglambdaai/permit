@@ -4,6 +4,15 @@
 
 ### Added
 
+- Add a C conformance runner under `conformance/c/` that executes the
+  Protocol v1 vector corpus as an independent non-Racket implementation:
+  exact-byte Ed25519 authentication, trust-store rules, closed schemas,
+  rejection classes, and policy decisions with exact failure reasons. CI
+  builds and runs it on macOS and Linux.
+- Add the release checklist used to cut Permit versions, including the
+  signed source release procedure.
+- Document the Racket API support and deprecation windows in the
+  compatibility guide.
 - Scribble manual (`permit-doc`): the client verification surface, policy
   evaluation, issuer API, CLI, and local-trial runtime, rendered as the
   package documentation for the catalog.

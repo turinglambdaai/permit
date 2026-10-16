@@ -2,6 +2,8 @@
 
 The [`v1/`](v1/) directory is the portable conformance corpus for Permit Protocol v1. It lets another implementation prove that it authenticates the same bytes and reaches the same policy decisions as the Racket reference implementation.
 
+A working non-Racket reader of this corpus ships in [`conformance/c/`](../conformance/c/README.md): a standalone C11 runner whose only dependency is OpenSSL. Use it as evidence, as a blueprint for verifiers in other host languages, or as a sparring partner when auditing a new implementation.
+
 You do not need these files to use Permit from Racket. Use them when implementing Permit in another language, auditing a verifier, or checking that an application integration has not changed protocol semantics.
 
 ## Start here

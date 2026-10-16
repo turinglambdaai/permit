@@ -74,6 +74,7 @@ The test suite is deliberately layered:
 - unit tests cover strict JSON, schemas, trust, crypto, identities, and policy;
 - integration tests cover the CLI and public facade;
 - deterministic vectors are the language-neutral conformance contract;
+- the C runner under `conformance/c/` executes those vectors as an independent non-Racket implementation and must agree with the Racket harness on every case;
 - documentation tests reject broken local links;
 - CI installs the repository as a real package on Windows, macOS, and Linux across the supported Racket versions;
 - the quality job rebuilds the manual and regenerates vectors, then requires a clean tree.

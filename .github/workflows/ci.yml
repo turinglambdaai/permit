@@ -33,6 +33,29 @@ jobs:
       - name: Test
         run: raco test -p permit
 
+  conformance-c:
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install OpenSSL development files
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            sudo apt-get update && sudo apt-get install -y libssl-dev pkg-config
+          else
+            brew list openssl@3 >/dev/null 2>&1 || brew install openssl@3
+          fi
+      - name: Build C conformance runner
+        working-directory: conformance/c
+        run: make
+      - name: Run Protocol v1 conformance vectors
+        working-directory: conformance/c
+        run: ./permit-conformance ../../test-vectors/v1
+
   quality:
     timeout-minutes: 10
     runs-on: ubuntu-latest
