@@ -2,7 +2,7 @@
 
 **Signed product rights for independent software — verifiable offline, manageable online when you need it.**
 
-[![CI](https://github.com/turinglambdaai/permit/actions/workflows/ci.yml/badge.svg)](https://github.com/turinglambdaai/permit/actions/workflows/ci.yml) ![Racket](https://img.shields.io/badge/Racket-9F1D20?logo=racket&logoColor=white) [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE) ![Protocol](https://img.shields.io/badge/protocol-v1-3559E0)
+[![CI](https://github.com/turinglambdaai/permit/actions/workflows/ci.yml/badge.svg)](https://github.com/turinglambdaai/permit/actions/workflows/ci.yml) ![Racket](https://img.shields.io/badge/Racket-9F1D20?logo=racket&logoColor=white) [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE) ![Protocol](https://img.shields.io/badge/protocol-v1-C15F3C)
 
 **English** · [中文](README.zh-CN.md)
 
