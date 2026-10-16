@@ -4,6 +4,9 @@
 
 ### Added
 
+- Scribble manual (`permit-doc`): the client verification surface, policy
+  evaluation, issuer API, CLI, and local-trial runtime, rendered as the
+  package documentation for the catalog.
 - Document the durable sibling-library integration contract for products that compose Permit with Rivet or Glaze.
 - Add repeatable `raco permit keygen --purpose ...` for least-privilege signing keys while preserving the all-purpose default for small deployments.
 
