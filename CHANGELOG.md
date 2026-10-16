@@ -7,6 +7,10 @@
 - Name Commerce as the family commercial-management owner and define the
   one-way `Commerce issuer adapter -> permit/issuer` boundary without moving
   payment, account, delivery, or framework behavior into Permit.
+- Add `docs/integration-evidence.md`, the record the v0.2 gate asks for:
+  gptp-studio as the first real integration, with its offline startup,
+  credential replacement, key rotation, expiry, and corrupt-state
+  behavior pinned by tests, plus the problems the integration surfaced.
 - Declare `rackunit-lib` as a runtime package dependency because the public
   source package includes the `permit-test` collection.
 - Add a C conformance runner under `conformance/c/` that executes the
