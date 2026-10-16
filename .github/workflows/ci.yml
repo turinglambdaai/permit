@@ -56,6 +56,30 @@ jobs:
         working-directory: conformance/c
         run: ./permit-conformance ../../test-vectors/v1
 
+  conformance-c-windows:
+    timeout-minutes: 20
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up MSYS2 with gcc and OpenSSL
+        uses: msys2/setup-msys2@v2
+        with:
+          update: false
+          install: >-
+            make
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-openssl
+            pkg-config
+      - name: Build C conformance runner
+        working-directory: conformance/c
+        run: make
+      - name: Run Protocol v1 conformance vectors
+        working-directory: conformance/c
+        run: ./permit-conformance ../../test-vectors/v1
+
   quality:
     timeout-minutes: 10
     runs-on: ubuntu-latest

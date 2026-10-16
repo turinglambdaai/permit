@@ -24,9 +24,10 @@ library is LibreSSL and has no Ed25519), then falls back to `pkg-config`.
 On Linux, install the OpenSSL development files (`libssl-dev` and
 `pkg-config` on Debian-style distributions).
 
-Windows builds are expected to work through a vcpkg `openssl` installation
-and any C11 toolchain, but they are not yet exercised in CI; the C standard
-library usage is deliberately portable so that remains a build-only task.
+Windows is exercised in CI through an MSYS2 MinGW-w64 toolchain with its
+`openssl` package. Any C11 toolchain with an OpenSSL 3 development
+installation should build the runner (for example vcpkg's `openssl` with
+MSVC); the C standard library usage is deliberately portable.
 
 ## What it checks
 
