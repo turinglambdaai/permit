@@ -9,6 +9,8 @@
   exact-byte Ed25519 authentication, trust-store rules, closed schemas,
   rejection classes, and policy decisions with exact failure reasons. CI
   builds and runs it on macOS and Linux.
+- Register the package in the public catalog and fix the `license` field
+  to a bare SPDX symbol so the catalog recognizes Apache-2.0.
 - Add the release checklist used to cut Permit versions, including the
   signed source release procedure.
 - Document the Racket API support and deprecation windows in the
