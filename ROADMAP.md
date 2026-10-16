@@ -39,8 +39,9 @@ guide defines Racket API support and deprecation windows.
 - narrowly scoped client helpers proven by product integration and independent
   of Rivet and Glaze;
 - conformance-runner ergonomics that make additional implementations easier;
-- management-plane interface definitions for allocation, renewal, recovery,
-  and credential delivery, without implementing accounts or billing here.
+- issuer-boundary definitions needed by Commerce for allocation, renewal,
+  recovery, and credential delivery, without implementing those workflows,
+  accounts, or billing here.
 
 Higher-level adapters wait until at least two products need the same portable
 meaning. These candidates require design review before implementation and must

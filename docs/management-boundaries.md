@@ -10,19 +10,26 @@ Permit v0.1 implements the protocol, offline verifier, local policy engine, and 
 - Local evaluation of products, bundles, editions, features, add-ons, windows, versions, and installations
 - Trust stores, issuance-window key rotation, entitlement lineage, and revision selection
 
-## Future management plane
+## Commerce management plane
 
-A separate service may eventually manage:
+[Commerce](https://github.com/turinglambdaai/commerce) is the family repository
+for the provider-neutral commercial management plane. Its current foundation
+does not yet implement every item below; its roadmap, not Permit, owns their
+delivery:
 
 - payment-webhook to entitlement issuance orchestration;
-- account/customer lookup and credential delivery;
+- opaque subject lookup and credential delivery;
 - seat and device allocation, release, and transfer;
 - activation refresh and revocation distribution;
 - organization administration and audit history;
 - App Store, Microsoft Store, or third-party commerce receipt exchange;
 - air-gapped enterprise request/response workflows.
 
-That service should output signed Permit credentials. It must not become a required online oracle for products that promise offline use.
+Commerce outputs signed Permit credentials through an explicit issuer adapter.
+It must not become a required online oracle for products that promise offline
+use. Login, customer identity, and account recovery stay in the product or an
+identity service; Commerce consumes stable opaque subject ids rather than
+absorbing those systems.
 
 ## Explicitly outside Permit
 

@@ -24,7 +24,7 @@ The implementation therefore separates authenticated facts from product policy a
                                       |
                                     crypto
 
-              future management service -> permit/issuer -> signed files
+              Commerce issuer adapter -> permit/issuer -> signed files
 ```
 
 Dependencies point inward. The client facade never imports the issuer surface. Permit does not import Rivet, Glaze, payment SDKs, account systems, or network clients.
@@ -62,7 +62,7 @@ Use the following decision order for new work:
 
 1. If the data is issuer-specific bookkeeping and has no shared authorization meaning, place it under namespaced `extensions`.
 2. If it changes interoperable authorization semantics, write a protocol proposal before changing code.
-3. If it belongs to checkout, accounts, allocation, recovery, delivery, or dashboards, keep it in a future management component and exchange signed Protocol v1 artifacts at the boundary.
+3. If it belongs to checkout, provider events, allocation operations, recovery, delivery, or dashboards, keep it in Commerce or another explicit management component and exchange signed Protocol v1 artifacts at the boundary. Login and account recovery remain identity/product concerns rather than Permit behavior.
 4. If it is product-specific policy, keep it in the product unless at least two independent products need the same portable meaning.
 
 Never silently reinterpret an existing field. Compatible additions need specification text, positive and negative vectors, Racket tests, and migration guidance. Incompatible wire changes require a new protocol version.
@@ -87,6 +87,14 @@ The supported public client surface is `(require permit)`. Issuers use `(require
 
 Other modules are implementation details in v0.x even when Racket allows requiring them directly. The wire protocol has its own compatibility rules and may be more stable than the Racket API before 1.0.
 
-## Future components
+## Management components
 
-Possible management-plane packages may handle accounts, billing adapters, seat allocation, credential delivery, recovery, and revocation refresh. They should be separate packages or services. Their output is a signed credential; the client remains useful without them and never treats an online response boolean as authority.
+[Commerce](https://github.com/turinglambdaai/commerce) is the family owner for
+provider-neutral payment orchestration, commercial projections, rights
+intents, issuance workflow, claim delivery, and operator audit. Its explicit
+issuer adapter may consume `permit/issuer`; Permit never imports Commerce.
+Identity providers or product services continue to own login and account
+recovery. Any management component outputs signed credentials; the client
+remains useful without it and never treats an online response boolean as
+authority. The complete ownership graph lives in the
+[family architecture](https://github.com/turinglambdaai/keel/blob/main/docs/family-architecture.md).

@@ -4,6 +4,11 @@
 
 ### Added
 
+- Name Commerce as the family commercial-management owner and define the
+  one-way `Commerce issuer adapter -> permit/issuer` boundary without moving
+  payment, account, delivery, or framework behavior into Permit.
+- Declare `rackunit-lib` as a runtime package dependency because the public
+  source package includes the `permit-test` collection.
 - Add a C conformance runner under `conformance/c/` that executes the
   Protocol v1 vector corpus as an independent non-Racket implementation:
   exact-byte Ed25519 authentication, trust-store rules, closed schemas,

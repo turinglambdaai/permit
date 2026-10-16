@@ -60,6 +60,6 @@ Clock rollback remains a client-side threat. High-value managed products should 
 
 ## Seats and devices
 
-The entitlement may state `named_seats`, `device_activations`, and `concurrent_seats` as separate signed limits. Permit v1 does not define a central allocator. A future management service decides who occupies a seat and issues leases as evidence of that decision.
+The entitlement may state `named_seats`, `device_activations`, and `concurrent_seats` as separate signed limits. Permit v1 does not define a central allocator. Commerce or another explicit management service decides who occupies a seat and issues leases as evidence of that decision.
 
 A purely offline client cannot reliably enforce a global floating-seat count across multiple machines.

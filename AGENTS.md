@@ -2,11 +2,11 @@
 
 ## Scope
 
-Permit is a framework-neutral commercial-entitlement protocol and Racket reference implementation. The default `permit` facade is client-only; issuer operations live under `permit/issuer`. Keep its dependency direction independent: products may use Permit beside Rivet or Glaze; Rivet and Glaze must not depend on Permit. The normative shared boundary is `docs/framework-integration.md`; Rivet and Glaze summarize and link to it instead of restating it, so boundary and trust-domain changes land here first.
+Permit is a framework-neutral commercial-entitlement protocol and Racket reference implementation. The default `permit` facade is client-only; issuer operations live under `permit/issuer`. Keep its dependency direction independent: products may use Permit beside Rivet or Glaze, and Commerce may consume `permit/issuer` only through an explicit issuer adapter. Rivet, Glaze, and Permit never depend on Commerce; Rivet and Glaze never depend on Permit. The normative local boundary is `docs/framework-integration.md`; sibling repositories summarize and link to it instead of restating it, so rights and trust-domain changes land here first.
 
-The wider family dependency graph, ownership table, change routing, and release
-order are maintained in Keel's
-[`CONTRIBUTING.md`](https://github.com/turinglambdaai/keel/blob/main/CONTRIBUTING.md#family-operating-model).
+The five-repository dependency graph, ownership table, change routing, release
+order, and trust boundaries are maintained in Keel's
+[`docs/family-architecture.md`](https://github.com/turinglambdaai/keel/blob/main/docs/family-architecture.md).
 Permit's implementation queue remains owned by `ROADMAP.md`; its protocol and
 trust domain stay independent from Keel and the application frameworks.
 
@@ -28,7 +28,7 @@ Before changing code, read `docs/architecture.md`. Treat `docs/protocol-v1.md` a
 
 ## Boundaries
 
-Do not add payment processing, accounts, email, dashboards, pricing, tax, hosted metering, or a full license server to v0.x. Future management components must issue signed credentials through the protocol boundary.
+Do not add payment processing, accounts, email, dashboards, pricing, tax, hosted metering, or a full license server to Permit. Commerce owns provider-neutral commercial orchestration and must issue signed credentials through the `permit/issuer` boundary; it must not move that workflow into this repository.
 
 ## Changes
 

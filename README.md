@@ -17,7 +17,7 @@ Payment providers can tell you that money moved. Account systems can tell you wh
 Commercial applications need two properties that are often treated as opposites:
 
 - **Offline-verifiable** — the installed application can authorize features without phoning home.
-- **Online-manageable** — a future issuer may renew subscriptions, allocate seats, rotate keys, or refresh short-lived activation leases without changing the verification protocol.
+- **Online-manageable** — Commerce or another explicit issuer service may renew subscriptions, allocate seats, rotate keys, or refresh short-lived activation leases without changing the verification protocol.
 
 Permit separates those concerns. Long-lived **entitlements** describe commercial rights, optional **activation leases** bind a right to an installation for a limited period, and **trials** remain their own credential type. Products opt into only the layers they need.
 
@@ -31,6 +31,11 @@ Permit composes beside an application framework:
 ```
 
 Rivet and Glaze do not depend on Permit. Update-artifact signing and Permit credential signing also use separate keys and trust policies. See the [framework integration contract](docs/framework-integration.md) for the durable dependency and responsibility boundaries.
+
+Online products may add [Commerce](https://github.com/turinglambdaai/commerce)
+for provider events, commercial projections, issuance workflow, and credential
+claim delivery. Commerce consumes the explicit issuer API; Permit never imports
+Commerce, and products still authorize locally from verified credentials.
 
 ## What it models
 
@@ -201,9 +206,9 @@ This lets a release carry tomorrow's public key before the issuing service switc
 
 ## Deliberate boundary
 
-Permit v0.1 does **not** implement payment processing, customer accounts, email, pricing, tax, a dashboard, hosted metering, or a license server. Those systems may issue and refresh Permit credentials later; they do not belong in the verification core.
+Permit v0.1 does **not** implement payment processing, customer accounts, email, pricing, tax, a dashboard, hosted metering, or a license server. Commerce owns the family payment-to-rights orchestration path; identity and product services own accounts. These systems may issue and refresh Permit credentials through the explicit issuer API, but they do not belong in the verification core.
 
-Seat allocation, device reclamation, subscription renewal, and account recovery are future management operations. The v0.1 boundary defines the signed artifacts those systems exchange with products.
+Seat allocation, device reclamation, subscription renewal, and credential delivery are Commerce or other management operations. Account recovery remains an identity/product operation. The v0.1 boundary defines the signed artifacts those systems exchange with products.
 
 ## Development
 

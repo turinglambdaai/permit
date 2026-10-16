@@ -10,7 +10,7 @@
       'credential.label': 'SIGNED CREDENTIAL', 'credential.verified': 'verified', 'credential.public': 'public trust', 'credential.payload': 'exact payload',
       'why.eyebrow': 'THE MISSING PRODUCT LAYER', 'why.title': 'Payments are not permissions.',
       'why.p1': 'A payment event proves that money moved. An account proves identity. Neither gives an installed app a durable, portable answer to “what may this user run right now?”',
-      'why.p2': 'Permit turns that answer into a signed artifact. The application verifies it locally with public keys it already trusts. A future management service may issue or refresh credentials, but authorization never depends on that service being reachable.',
+      'why.p2': 'Permit turns that answer into a signed artifact. The application verifies it locally with public keys it already trusts. Commerce or another explicit issuer service may issue or refresh credentials, but authorization never depends on that service being reachable.',
       'principle.one.title': 'Exact bytes, no ambiguity',
       'principle.one.body': 'Ed25519 signs the decoded payload bytes exactly. Verifiers never parse and re-serialize JSON before checking the signature.',
       'principle.two.title': 'Rights outlive connectivity',
@@ -38,7 +38,7 @@
       'start.lede': 'Install the package, generate a key pair, sign a payload, then verify it with only the public trust store.',
       'start.source': 'Browse source and test vectors →',
       'boundary.eyebrow': 'A DELIBERATE BOUNDARY', 'boundary.title': 'A protocol, not a billing company.',
-      'boundary.body': 'Permit v0.1 does not implement payments, accounts, pricing, tax, email, dashboards, hosted metering, or a license server. Future management systems may issue Permit credentials through this boundary; they do not belong in the verification core.',
+      'boundary.body': 'Permit v0.1 does not implement payments, accounts, pricing, tax, email, dashboards, hosted metering, or a license server. Commerce owns the family payment-to-rights workflow and may issue credentials through the explicit issuer boundary; it does not belong in the verification core.',
       'footer.tagline': 'Signed product rights for independent software.'
     },
     zh: {
@@ -51,7 +51,7 @@
       'credential.label': '签名凭证', 'credential.verified': '已验证', 'credential.public': '公开信任', 'credential.payload': '精确 payload',
       'why.eyebrow': '缺失的产品层', 'why.title': '付款，不等于权限。',
       'why.p1': '支付事件只能证明钱已到账，账号只能证明用户身份。它们都不能给已安装的应用一个长期、可携带的答案：“这个用户现在可以运行什么？”',
-      'why.p2': 'Permit 把答案变成签名制品。应用用已经信任的公钥在本地验证；未来的管理服务可以签发或刷新凭证，但授权判断不依赖服务此刻是否在线。',
+      'why.p2': 'Permit 把答案变成签名制品。应用用已经信任的公钥在本地验证；Commerce 或其他明确的签发服务可以签发或刷新凭证，但授权判断不依赖服务此刻是否在线。',
       'principle.one.title': '精确字节，没有歧义',
       'principle.one.body': 'Ed25519 对解码后的 payload 字节做精确签名。验证端绝不先解析 JSON、重新序列化，再验签。',
       'principle.two.title': '权益不随网络消失',
@@ -79,7 +79,7 @@
       'start.lede': '安装包、生成密钥对、签一个 payload，再只用公开信任库完成验证。',
       'start.source': '查看源码与测试向量 →',
       'boundary.eyebrow': '有意保留的边界', 'boundary.title': '它是协议，不是账单公司。',
-      'boundary.body': 'Permit v0.1 不实现支付、账号、定价、税务、邮件、管理后台、托管计量或许可证服务器。未来管理系统可以通过这条边界签发 Permit 凭证，但不进入验证核心。',
+      'boundary.body': 'Permit v0.1 不实现支付、账号、定价、税务、邮件、管理后台、托管计量或许可证服务器。家族内从支付到权益的流程由 Commerce 负责，并通过显式 issuer 边界签发凭证；它不进入验证核心。',
       'footer.tagline': '给独立软件的签名产品权益。'
     }
   };
