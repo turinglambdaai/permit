@@ -1,0 +1,51 @@
+{
+  "protocol": "permit",
+  "version": 1,
+  "type": "entitlement",
+  "credential_id": "cred_managed_vector_01",
+  "entitlement_id": "ent_managed_vector_01",
+  "revision": 2,
+  "issuer": "example.test",
+  "issued_at": "2026-10-15T00:00:00Z",
+  "not_before": null,
+  "subject": {
+    "type": "person",
+    "id": "person_vector",
+    "display": "Example User"
+  },
+  "channel": "commercial",
+  "grants": [
+    {
+      "scope": {
+        "products": [
+          "example-desktop"
+        ],
+        "product_families": []
+      },
+      "edition": "pro",
+      "features": [],
+      "addons": [],
+      "capabilities": {
+        "export-enabled": true
+      },
+      "feature_policy": "published-through"
+    }
+  ],
+  "constraints": {
+    "use_expires_at": null,
+    "updates_through": "2027-12-31T23:59:59Z",
+    "features_through": "2027-06-30T23:59:59Z",
+    "version_policy": {
+      "min": null,
+      "max": null
+    },
+    "limits": {
+      "named_seats": 1,
+      "device_activations": 2,
+      "concurrent_seats": 1
+    },
+    "installation_id": null,
+    "activation_required": true
+  },
+  "extensions": {}
+}

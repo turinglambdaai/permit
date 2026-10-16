@@ -89,6 +89,171 @@
         "version": "4.0.0"
       },
       "expected": false
+    },
+    {
+      "name": "managed-entitlement-requires-activation",
+      "credential": "managed-entitlement.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "usable",
+        "installation_id": "ins_vector_A",
+        "at": "2027-06-01T00:00:00Z"
+      },
+      "expected": false,
+      "expected_reasons": [
+        "activation-required"
+      ]
+    },
+    {
+      "name": "managed-activation-valid",
+      "credential": "managed-entitlement.permit.json",
+      "activation": "activation.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "usable",
+        "installation_id": "ins_vector_A",
+        "at": "2027-06-01T00:00:00Z"
+      },
+      "expected": true
+    },
+    {
+      "name": "managed-activation-wrong-installation",
+      "credential": "managed-entitlement.permit.json",
+      "activation": "activation.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "usable",
+        "installation_id": "ins_vector_B",
+        "at": "2027-06-01T00:00:00Z"
+      },
+      "expected": false,
+      "expected_reasons": [
+        "activation-invalid"
+      ]
+    },
+    {
+      "name": "activation-offline-grace-inclusive",
+      "credential": "managed-entitlement.permit.json",
+      "activation": "activation.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "usable",
+        "installation_id": "ins_vector_A",
+        "at": "2028-01-01T01:00:00Z"
+      },
+      "expected": true
+    },
+    {
+      "name": "activation-offline-grace-after",
+      "credential": "managed-entitlement.permit.json",
+      "activation": "activation.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "usable",
+        "installation_id": "ins_vector_A",
+        "at": "2028-01-01T01:00:01Z"
+      },
+      "expected": false,
+      "expected_reasons": [
+        "activation-invalid"
+      ]
+    },
+    {
+      "name": "feature-window-inclusive",
+      "credential": "managed-entitlement.permit.json",
+      "activation": "activation.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "feature",
+        "product": "example-desktop",
+        "feature": "feature-at-cutoff",
+        "published_at": "2027-06-30T23:59:59Z",
+        "installation_id": "ins_vector_A",
+        "at": "2027-07-01T00:00:00Z"
+      },
+      "expected": true
+    },
+    {
+      "name": "feature-window-after",
+      "credential": "managed-entitlement.permit.json",
+      "activation": "activation.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "feature",
+        "product": "example-desktop",
+        "feature": "feature-after-cutoff",
+        "published_at": "2027-07-01T00:00:00Z",
+        "installation_id": "ins_vector_A",
+        "at": "2027-07-01T00:00:00Z"
+      },
+      "expected": false
+    },
+    {
+      "name": "feature-window-missing-publication-time",
+      "credential": "managed-entitlement.permit.json",
+      "activation": "activation.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "feature",
+        "product": "example-desktop",
+        "feature": "feature-without-metadata",
+        "installation_id": "ins_vector_A",
+        "at": "2027-07-01T00:00:00Z"
+      },
+      "expected": false
+    },
+    {
+      "name": "trial-expiry-inclusive",
+      "credential": "trial.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "usable",
+        "at": "2026-10-29T00:00:00Z"
+      },
+      "expected": true
+    },
+    {
+      "name": "trial-expired-after-boundary",
+      "credential": "trial.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "usable",
+        "at": "2026-10-29T00:00:01Z"
+      },
+      "expected": false,
+      "expected_reasons": [
+        "use-expired"
+      ]
+    },
+    {
+      "name": "trial-extension-applies",
+      "credential": "trial.permit.json",
+      "trial_extensions": [
+        "trial-extension.permit.json"
+      ],
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "usable",
+        "at": "2026-11-05T00:00:00Z"
+      },
+      "expected": true
+    },
+    {
+      "name": "trial-extension-is-idempotent",
+      "credential": "trial.permit.json",
+      "trial_extensions": [
+        "trial-extension.permit.json",
+        "trial-extension.permit.json"
+      ],
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "usable",
+        "at": "2026-11-05T00:00:01Z"
+      },
+      "expected": false,
+      "expected_reasons": [
+        "use-expired"
+      ]
     }
   ]
 }

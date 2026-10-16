@@ -5,13 +5,25 @@
          "schema.rkt"
          "trust.rkt")
 
-(provide issue-credential
+(provide issued-credential?
+         issue-credential
+         write-issued-credential
          generate-ed25519-keypair
          read-ed25519-private-key
          read-ed25519-public-key
          ed25519-private-key->der
          ed25519-public-key->der
          public-key->base64)
+
+;; Issued credentials remain opaque to callers. The issuer surface exposes the
+;; predicate and serializer needed to persist or deliver one without exposing
+;; raw envelope constructors as a second signing path.
+(define issued-credential? permit-envelope?)
+
+(define (write-issued-credential credential destination)
+  (unless (issued-credential? credential)
+    (raise-argument-error 'write-issued-credential "issued-credential?" credential))
+  (write-envelope credential destination))
 
 ;; Safe issuer path: unlike low-level envelope signing, this checks that the
 ;; payload is schema-valid, belongs to the configured issuer, is allowed by

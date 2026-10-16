@@ -7,6 +7,12 @@
 - Scribble manual (`permit-doc`): the client verification surface, policy
   evaluation, issuer API, CLI, and local-trial runtime, rendered as the
   package documentation for the catalog.
+- Add a maintainer architecture map, contribution contract, roadmap, and ADR template so future work can proceed without relying on conversation history.
+- Strengthen CI with manual compilation and byte-for-byte vector reproducibility checks.
+- Consolidate every Racket test under `permit-test/` so local and package-level test entry points cover the same suite.
+- Expand the deterministic Protocol v1 corpus to cover entitlement, managed activation, signed trial, trial extension, offline grace, and published-through feature decisions.
+- Add English and Chinese step-by-step guides that separate issuer secrets, shipped trust data, verification, and product policy evaluation.
+- Add an opaque issuer credential predicate and writer so programmatic issuers can safely persist the result of `issue-credential` without importing raw envelope internals.
 - Document the durable sibling-library integration contract for products that compose Permit with Rivet or Glaze.
 - Add repeatable `raco permit keygen --purpose ...` for least-privilege signing keys while preserving the all-purpose default for small deployments.
 

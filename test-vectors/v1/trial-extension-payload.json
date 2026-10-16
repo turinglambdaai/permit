@@ -1,0 +1,12 @@
+{
+  "protocol": "permit",
+  "version": 1,
+  "type": "trial-extension",
+  "credential_id": "cred_trial_extension_vector_01",
+  "trial_id": "trial_vector_01",
+  "issuer": "example.test",
+  "issued_at": "2026-10-20T00:00:00Z",
+  "not_before": null,
+  "use_expires_at": "2026-11-05T00:00:00Z",
+  "extensions": {}
+}

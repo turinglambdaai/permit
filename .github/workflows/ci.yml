@@ -14,6 +14,7 @@ concurrency:
 
 jobs:
   test:
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -28,6 +29,23 @@ jobs:
       - name: Install package
         run: raco pkg install --auto --no-docs --name permit "${{ github.workspace }}"
       - name: Compile
-        run: raco make permit/main.rkt permit/cli.rkt
+        run: raco make permit/main.rkt permit/cli.rkt permit-doc/scribblings/permit.scrbl
       - name: Test
         run: raco test -p permit
+
+  quality:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Bogdanp/setup-racket@v1.14
+        with:
+          version: "9.3"
+      - name: Install package
+        run: raco pkg install --auto --no-docs --name permit "${{ github.workspace }}"
+      - name: Build reference manual
+        run: raco scribble --htmls --dest "${{ runner.temp }}/permit-doc" permit-doc/scribblings/permit.scrbl
+      - name: Reproduce signed test vectors
+        run: racket test-vectors/v1/generate.rkt
+      - name: Require byte-for-byte reproducibility
+        run: git diff --exit-code -- test-vectors/v1

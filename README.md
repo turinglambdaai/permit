@@ -48,6 +48,8 @@ Grants may name editions, features, add-ons, bundles, and scalar capabilities. T
 
 ## Quick start
 
+New to signed credentials? Follow the [step-by-step getting-started guide](docs/getting-started.md). It explains which files stay private, which files ship with the application, and how verification differs from policy evaluation.
+
 Install the Racket package:
 
 ```bash
@@ -91,8 +93,8 @@ Then evaluate product policy:
 raco permit check \
   --trust-store trust-store.json \
   --credential entitlement.permit.json \
-  --product gptp-studio \
-  --feature pcap-export \
+  --product example-app \
+  --feature example-feature \
   --feature-published-at 2026-10-01T00:00:00Z \
   --version 2.0.0
 ```
@@ -128,7 +130,7 @@ Protocol v1 includes:
 - multi-key trust stores with `next`, `active`, `retired`, and `revoked` states plus per-key credential purposes
 - deterministic cross-language test vectors
 
-Start with the [normative Protocol v1 specification](docs/protocol-v1.md), then see [entitlements](docs/entitlement-v1.md), [activation](docs/activation-v1.md), [trust](docs/trust-model.md), [lifecycle](docs/lifecycle.md), [compatibility](docs/compatibility.md), [threat model](docs/threat-model.md), the [framework integration contract](docs/framework-integration.md), and the [management boundary](docs/management-boundaries.md).
+Start with the [getting-started guide](docs/getting-started.md). For implementation work, read the [architecture map](docs/architecture.md). For protocol work, continue with the [normative Protocol v1 specification](docs/protocol-v1.md), then see [entitlements](docs/entitlement-v1.md), [activation](docs/activation-v1.md), [trust](docs/trust-model.md), [lifecycle](docs/lifecycle.md), [compatibility](docs/compatibility.md), [threat model](docs/threat-model.md), the [framework integration contract](docs/framework-integration.md), and the [management boundary](docs/management-boundaries.md).
 
 ## Client and issuer APIs
 
@@ -157,8 +159,8 @@ Issuer-side code opts in explicitly:
   (verify-credential "entitlement.permit.json" store))
 
 (when (feature-entitled? entitlement
-                         "gptp-studio"
-                         "pcap-export"
+                         "example-app"
+                         "example-feature"
                          #:published-at "2026-10-01T00:00:00Z")
   (enable-pcap-export!))
 ```
@@ -207,21 +209,23 @@ Seat allocation, device reclamation, subscription renewal, and account recovery 
 
 ```bash
 raco pkg install --auto --no-docs --link
-raco make permit/main.rkt permit/cli.rkt
-raco test permit-test/
+raco make permit/main.rkt permit/cli.rkt permit-doc/scribblings/permit.scrbl
+raco test -p permit
 ```
 
 The deterministic corpus under [`test-vectors/v1`](test-vectors/v1) is the interoperability contract for other language implementations.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete change checklist and [ROADMAP.md](ROADMAP.md) for the evidence required on the path to 1.0.
 
 ## Repository structure
 
 ```text
 permit/
-├── permit/                 # envelope, schema, policy, trust and CLI modules
-├── docs/                   # normative protocol and management boundary
+├── permit/                 # public facade, implementation and CLI
+├── permit-doc/             # installed Scribble reference manual
+├── docs/                   # architecture, normative protocol and boundaries
 ├── examples/               # schema-valid commercial model payloads
-├── test-vectors/v1/        # deterministic cross-language corpus
-├── permit-test/                  # unit, policy and vector tests
+├── test-vectors/v1/        # deterministic cross-language conformance corpus
+├── permit-test/            # unit, integration, documentation and vector tests
 └── site/                   # bilingual product homepage
 ```
 
