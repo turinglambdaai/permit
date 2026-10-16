@@ -2,7 +2,7 @@
 
 ## Scope
 
-Permit is a framework-neutral commercial-entitlement protocol and Racket reference implementation. The default `permit` facade is client-only; issuer operations live under `permit/issuer`. Keep its dependency direction independent: products may use Permit beside Rivet or Glaze; Rivet and Glaze must not depend on Permit.
+Permit is a framework-neutral commercial-entitlement protocol and Racket reference implementation. The default `permit` facade is client-only; issuer operations live under `permit/issuer`. Keep its dependency direction independent: products may use Permit beside Rivet or Glaze; Rivet and Glaze must not depend on Permit. The normative shared boundary is `docs/framework-integration.md`; Rivet and Glaze summarize and link to it instead of restating it, so boundary and trust-domain changes land here first.
 
 Before changing code, read `docs/architecture.md`. Treat `docs/protocol-v1.md` as normative for wire behavior and this file as the compact implementation checklist.
 
