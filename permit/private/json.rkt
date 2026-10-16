@@ -50,6 +50,15 @@
         [(char=? ch #\\)
          (when (>= (add1 cursor) length*)
            (fail who "unterminated JSON escape" "offset" cursor))
+         ;; U+0000 is rejected on both implementations: the C runner
+         ;; compares strings with strlen, and member names decoded with a
+         ;; NUL could alias schema fields. Non-NUL control escapes stay
+         ;; valid and behave identically on both sides.
+         (when (and (char=? (string-ref text (add1 cursor)) #\u)
+                    (<= (+ cursor 6) length*)
+                    (for/and ([k (in-range 2 6)])
+                      (char=? (string-ref text (+ cursor k)) #\0)))
+           (fail who "NUL escape in JSON string" "offset" cursor))
          (loop (+ cursor 2))]
         [else (loop (add1 cursor))])))
 

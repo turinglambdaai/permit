@@ -679,3 +679,49 @@
 (check-exn #rx"different entitlement lineages"
            (lambda ()
              (select-latest-entitlement (list managed-r1 foreign-lineage))))
+
+;; ---- 2026-10 security-review regressions ----
+;; Pinned from the first independent review (docs/security-review-2026-10.md)
+;; so the fixes cannot regress silently.
+
+;; U+0000 is rejected anywhere in a JSON string on both implementations:
+;; the C runner compares strings with strlen, so a NUL inside a member
+;; name could alias a schema field.
+(check-exn #rx"NUL escape in JSON string"
+           (lambda ()
+             (parse-credential-payload
+              #"{\"type\\u0000\":\"entitlement\"}")))
+(check-exn #rx"NUL escape in JSON string"
+           (lambda ()
+             (read-envelope
+              (open-input-string
+               "{\"permit_version\":1,\"algorithm\":\"Ed25519\",\"key_id\":\"a\\u0000b\",\"payload\":\"\",\"signature\":\"\"}"))))
+
+;; Integers beyond signed 64-bit are rejected, matching the C runner's
+;; long long: clamping flipped an activation binding decision.
+(check-exn #rx"revision"
+           (lambda ()
+             (validate-credential-claims
+              (hash-set (entitlement "cred_bignum_rev" (constraints))
+                        'revision
+                        1000000000000000000000000000000))))
+(check-exn #rx"non-negative integer or null"
+           (lambda ()
+             (validate-credential-claims
+              (hash-set (entitlement "cred_bignum_limit" (constraints))
+                        'constraints
+                        (hash-set (constraints)
+                                  'limits
+                                  (hasheq 'named_seats 1000000000000000000000000000000
+                                          'device_activations 'null
+                                          'concurrent_seats 'null))))))
+
+;; Non-finite capability values stay rejected (the C runner now checks
+;; isfinite against the same inputs).
+(check-exn #rx"capability"
+           (lambda ()
+             (validate-credential-claims
+              (entitlement "cred_inf_cap" (constraints)
+                           #:grants
+                           (list (hash-set default-grant 'capabilities
+                                           (hasheq 'team-members +inf.0)))))))

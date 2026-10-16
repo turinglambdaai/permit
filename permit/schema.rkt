@@ -28,6 +28,16 @@
   '(activation_required features_through installation_id limits updates_through
                         use_expires_at version_policy))
 (define limits-fields '(concurrent_seats device_activations named_seats))
+
+;; Protocol integers share the C runner's representation (signed 64-bit):
+;; a larger exact integer would verify here and be rejected by the C
+;; conformance runner, breaking the two-implementations-agree invariant,
+;; so the schema bounds every integer field the same way.
+(define max-protocol-integer 9223372036854775807)
+(define (protocol-nonnegative-integer? v)
+  (and (exact-nonnegative-integer? v) (<= v max-protocol-integer)))
+(define (nullable-protocol-nonnegative-integer? v)
+  (or (eq? v 'null) (protocol-nonnegative-integer? v)))
 (define version-policy-fields '(max min))
 (define subject-fields '(display id type))
 (define subject-types '("person" "organization" "account" "device" "installation" "anonymous"))
@@ -194,7 +204,7 @@
   (exact-fields! who limits limits-fields "constraints.limits")
   (for ([name (in-list limits-fields)])
     (expect who
-            (nullable exact-nonnegative-integer?)
+            nullable-protocol-nonnegative-integer?
             "non-negative integer or null"
             (hash-ref limits name #f)
             (format "constraints.limits.~a" name)))
@@ -211,7 +221,7 @@
           (hash-ref claims 'entitlement_id #f)
           "entitlement_id")
   (expect who
-          exact-nonnegative-integer?
+          protocol-nonnegative-integer?
           "non-negative integer"
           (hash-ref claims 'revision #f)
           "revision")
@@ -232,7 +242,7 @@
   (for ([name (in-list '(entitlement_credential_id entitlement_id installation_id lease_id))])
     (expect who non-empty-string? "non-empty string" (hash-ref claims name #f) (symbol->string name)))
   (expect who
-          exact-nonnegative-integer?
+          protocol-nonnegative-integer?
           "non-negative integer"
           (hash-ref claims 'entitlement_revision #f)
           "entitlement_revision")
@@ -249,7 +259,7 @@
           "valid_until"
           (hash-ref claims 'valid_until)))
   (expect who
-          exact-nonnegative-integer?
+          protocol-nonnegative-integer?
           "non-negative integer"
           (hash-ref claims 'offline_grace_seconds #f)
           "offline_grace_seconds"))

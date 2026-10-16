@@ -73,7 +73,13 @@
       (define public-key-text (hash-ref entry 'public_key #f))
       (unless (and (string? public-key-text) (positive? (string-length public-key-text)))
         (raise-arguments-error who "invalid public_key" "key_id" id "value" public-key-text))
-      (define prior-id (hash-ref seen-public-keys public-key-text #f))
+      ;; Alias detection compares the deterministic DER encoding, not the
+      ;; Base64 text: two spellings of one key must collapse to one entry
+      ;; no matter which encoding layer is in charge (the C runner
+      ;; compares the raw 32 key bytes for the same reason).
+      (define key (base64->public-key public-key-text))
+      (define key-der (ed25519-public-key->der key))
+      (define prior-id (hash-ref seen-public-keys key-der #f))
       (when prior-id
         (raise-arguments-error who
                                "the same public key must not appear under multiple key ids"
@@ -81,7 +87,7 @@
                                id
                                "previous_key_id"
                                prior-id))
-      (hash-set! seen-public-keys public-key-text id)
+      (hash-set! seen-public-keys key-der id)
       (define purposes (hash-ref entry 'purposes #f))
       (unless (and (list? purposes)
                    (pair? purposes)
@@ -125,7 +131,7 @@
                                id))
       (values id
               (trust-key id
-                         (base64->public-key public-key-text)
+                         key
                          status
                          not-before
                          not-after

@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Fixed
+
+- Close the findings of the first independent security review
+  (`docs/security-review-2026-10.md`). The C runner now rejects NUL
+  escapes inside JSON strings, integers beyond signed 64-bit (no silent
+  clamping), non-finite capability values, and trailing bytes after the
+  DER public key; the grace addition saturates instead of overflowing.
+  The Racket reference now rejects `\u0000` on the same layer and
+  detects aliased trust keys by DER bytes instead of Base64 text, and
+  its schema bounds integer fields to signed 64-bit so both
+  implementations decide identically. Regression tests pin every finding;
+  the normative rules live in `docs/protocol-v1.md`.
+
 ### Added
 
 - Name Commerce as the family commercial-management owner and define the

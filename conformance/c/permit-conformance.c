@@ -32,7 +32,10 @@
 #include <openssl/evp.h>
 #include <openssl/x509.h>
 
+#include <errno.h>
 #include <inttypes.h>
+#include <limits.h>
+#include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -237,6 +240,10 @@ static int ed25519_raw_from_spki(const unsigned char *der, size_t der_len,
   const unsigned char *cursor = der;
   EVP_PKEY *pkey = d2i_PUBKEY(NULL, &cursor, (long)der_len);
   if (!pkey) return 0;
+  if ((size_t)(cursor - der) != der_len) {
+    EVP_PKEY_free(pkey);
+    return 0;
+  }
   size_t len = 32;
   int ok = EVP_PKEY_get_raw_public_key(pkey, raw, &len) == 1 && len == 32;
   EVP_PKEY_free(pkey);
@@ -476,6 +483,10 @@ static char *json_parse_string_raw(JsonParser *p, size_t *out_len) {
             }
             cp = (cp << 4) | (unsigned long)h;
           }
+          if (cp == 0) {
+            json_fail(p, "NUL escape in JSON string");
+            goto fail;
+          }
           p->pos += 4;
           if (cp >= 0xD800 && cp <= 0xDBFF) {
             if (p->pos + 6 > p->len || p->buf[p->pos] != '\\' ||
@@ -587,8 +598,9 @@ static Json *json_parse_number(JsonParser *p) {
     memcpy(tmp, p->buf + start, n);
     tmp[n] = '\0';
     char *tail;
+    errno = 0;
     long long value = strtoll(tmp, &tail, 10);
-    if (*tail != '\0') {
+    if (*tail != '\0' || errno == ERANGE) {
       json_fail(p, "JSON integer out of supported range");
       return NULL;
     }
@@ -601,7 +613,7 @@ static Json *json_parse_number(JsonParser *p) {
     char *tail;
     double value = strtod(tmp, &tail);
     free(tmp);
-    if (*tail != '\0') {
+    if (*tail != '\0' || !isfinite(value)) {
       json_fail(p, "invalid JSON number");
       return NULL;
     }
@@ -1774,8 +1786,10 @@ static int activation_valid(const Json *entitlement, const Json *activation,
     return 0;
   }
   long long at_secs = time_seconds(at);
-  long long deadline = time_seconds(obj_get(activation, "valid_until")->str) +
-                       obj_get(activation, "offline_grace_seconds")->integer;
+  long long until = time_seconds(obj_get(activation, "valid_until")->str);
+  long long grace = obj_get(activation, "offline_grace_seconds")->integer;
+  long long deadline =
+      (grace > 0 && until > LLONG_MAX - grace) ? LLONG_MAX : until + grace;
   return at_secs <= deadline;
 }
 
