@@ -4,6 +4,12 @@
 
 Permit is a framework-neutral commercial-entitlement protocol and Racket reference implementation. The default `permit` facade is client-only; issuer operations live under `permit/issuer`. Keep its dependency direction independent: products may use Permit beside Rivet or Glaze; Rivet and Glaze must not depend on Permit. The normative shared boundary is `docs/framework-integration.md`; Rivet and Glaze summarize and link to it instead of restating it, so boundary and trust-domain changes land here first.
 
+The wider family dependency graph, ownership table, change routing, and release
+order are maintained in Keel's
+[`CONTRIBUTING.md`](https://github.com/turinglambdaai/keel/blob/main/CONTRIBUTING.md#family-operating-model).
+Permit's implementation queue remains owned by `ROADMAP.md`; its protocol and
+trust domain stay independent from Keel and the application frameworks.
+
 Before changing code, read `docs/architecture.md`. Treat `docs/protocol-v1.md` as normative for wire behavior and this file as the compact implementation checklist.
 
 ## Invariants

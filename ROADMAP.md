@@ -2,7 +2,7 @@
 
 Permit develops from a small, audited core outward. Milestones describe readiness, not promised dates.
 
-## v0.1 — protocol and reference core
+## v0.1 — protocol and reference core (complete)
 
 - Protocol v1 envelope, credential schemas, trust model, and policy semantics
 - client-only Racket facade and opt-in issuer API
@@ -13,22 +13,38 @@ Permit develops from a small, audited core outward. Milestones describe readines
 
 The v0.1 line intentionally excludes payment, accounts, dashboards, email delivery, hosted metering, and a license server.
 
-## Before v0.2
+## Current gate — earn v0.2
 
-- complete an independent security-focused review of parsing, trust transitions, and policy boundaries
-- exercise the vectors from at least one non-Racket implementation
-- collect integration feedback from real desktop applications
-- establish a release checklist and publish signed source releases
-- document deprecation and support windows for the Racket API
+Permit does not reach v0.2 by adding more credential types. It reaches v0.2
+when the existing protocol has independent review and product evidence:
 
-## Candidate v0.2 work
+1. Complete an independent security-focused review of exact-byte signature
+   verification, strict parsing, trust transitions, lineage selection, and
+   policy boundaries. Close every critical/high finding before release.
+2. Integrate the public client facade in at least one real Rivet or Glaze
+   product without adding a framework dependency. Record offline startup,
+   credential replacement, key rotation, expiry, and corrupt-state behavior.
+3. Turn problems found by that integration into framework-neutral diagnostics
+   or API corrections, with regression tests and compatibility notes.
+4. Cut a signed release only after the package-install, documentation, vector,
+   Racket, and independent C conformance gates all pass from the release tag.
 
-- higher-level application adapter helpers that remain framework-neutral
-- management-plane interface definitions for allocation, renewal, recovery, and credential delivery
-- additional conformance runner ergonomics for other languages
-- structured diagnostics that do not weaken fail-closed behavior
+Already complete: the C runner exercises Protocol v1 independently of Racket;
+the release checklist defines signed source releases; and the compatibility
+guide defines Racket API support and deprecation windows.
 
-These candidates require design review before implementation. They must not move payment or account logic into the protocol core.
+## Allowed v0.2 scope
+
+- structured diagnostics that preserve fail-closed behavior;
+- narrowly scoped client helpers proven by product integration and independent
+  of Rivet and Glaze;
+- conformance-runner ergonomics that make additional implementations easier;
+- management-plane interface definitions for allocation, renewal, recovery,
+  and credential delivery, without implementing accounts or billing here.
+
+Higher-level adapters wait until at least two products need the same portable
+meaning. These candidates require design review before implementation and must
+not move payment or account logic into the protocol core.
 
 ## Toward 1.0
 
