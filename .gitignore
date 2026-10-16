@@ -4,3 +4,4 @@ compiled/
 *.dep
 *.bak
 private-key.*
+conformance/c/permit-conformance
