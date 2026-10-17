@@ -272,6 +272,165 @@
       "expected_reasons": [
         "use-expired"
       ]
+    },
+    {
+      "name": "edition-direct-product",
+      "credential": "entitlement.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "edition",
+        "product": "gptp-studio",
+        "edition": "team",
+        "at": "2026-10-16T00:00:00Z",
+        "version": "2.0.0"
+      },
+      "expected": true
+    },
+    {
+      "name": "edition-wrong-edition",
+      "credential": "entitlement.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "edition",
+        "product": "gptp-studio",
+        "edition": "enterprise",
+        "at": "2026-10-16T00:00:00Z",
+        "version": "2.0.0"
+      },
+      "expected": false
+    },
+    {
+      "name": "edition-through-product-family",
+      "credential": "entitlement.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "edition",
+        "product": "unknown-product",
+        "product_family": "automotive-tools",
+        "edition": "team",
+        "at": "2026-10-16T00:00:00Z",
+        "version": "2.0.0"
+      },
+      "expected": true
+    },
+    {
+      "name": "edition-outside-scope",
+      "credential": "entitlement.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "edition",
+        "product": "unknown-product",
+        "edition": "team",
+        "at": "2026-10-16T00:00:00Z",
+        "version": "2.0.0"
+      },
+      "expected": false
+    },
+    {
+      "name": "edition-needs-version-context",
+      "credential": "entitlement.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "edition",
+        "product": "gptp-studio",
+        "edition": "team",
+        "at": "2026-10-16T00:00:00Z"
+      },
+      "expected": false
+    },
+    {
+      "name": "addon-granted",
+      "credential": "entitlement.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "addon",
+        "product": "gptp-studio",
+        "addon": "report-pack",
+        "at": "2026-10-16T00:00:00Z",
+        "version": "2.0.0"
+      },
+      "expected": true
+    },
+    {
+      "name": "addon-not-granted",
+      "credential": "entitlement.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "addon",
+        "product": "gptp-studio",
+        "addon": "other-pack",
+        "at": "2026-10-16T00:00:00Z",
+        "version": "2.0.0"
+      },
+      "expected": false
+    },
+    {
+      "name": "capability-value",
+      "credential": "entitlement.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "capability",
+        "product": "benchpilot",
+        "name": "team-members",
+        "equals": 5,
+        "at": "2026-10-16T00:00:00Z",
+        "version": "2.0.0"
+      },
+      "expected": true
+    },
+    {
+      "name": "capability-value-differs",
+      "credential": "entitlement.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "capability",
+        "product": "benchpilot",
+        "name": "team-members",
+        "equals": 6,
+        "at": "2026-10-16T00:00:00Z",
+        "version": "2.0.0"
+      },
+      "expected": false
+    },
+    {
+      "name": "capability-missing-is-null",
+      "credential": "entitlement.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "capability",
+        "product": "benchpilot",
+        "name": "missing",
+        "equals": null,
+        "at": "2026-10-16T00:00:00Z",
+        "version": "2.0.0"
+      },
+      "expected": true
+    },
+    {
+      "name": "limit-named-seats",
+      "credential": "entitlement.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "limit",
+        "name": "named_seats",
+        "equals": 5,
+        "at": "2026-10-16T00:00:00Z",
+        "version": "2.0.0"
+      },
+      "expected": true
+    },
+    {
+      "name": "limit-value-differs",
+      "credential": "entitlement.permit.json",
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "limit",
+        "name": "concurrent_seats",
+        "equals": 3,
+        "at": "2026-10-16T00:00:00Z",
+        "version": "2.0.0"
+      },
+      "expected": false
     }
   ]
 }

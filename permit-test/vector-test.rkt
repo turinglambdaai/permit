@@ -260,6 +260,57 @@
       '())]
     [(version)
      (values (version-allowed? credential (hash-ref query 'version)) '())]
+    [(edition)
+     (values
+      (edition-entitled? credential
+                         (hash-ref query 'product)
+                         (hash-ref query 'edition)
+                         #:product-family (hash-ref query 'product_family #f)
+                         #:at at
+                         #:version (hash-ref query 'version #f)
+                         #:installation-id installation-id
+                         #:activation activation
+                         #:trial-extensions extensions)
+      '())]
+    [(addon)
+     (values
+      (addon-entitled? credential
+                       (hash-ref query 'product)
+                       (hash-ref query 'addon)
+                       #:product-family (hash-ref query 'product_family #f)
+                       #:at at
+                       #:version (hash-ref query 'version #f)
+                       #:installation-id installation-id
+                       #:activation activation
+                       #:trial-extensions extensions)
+      '())]
+    ;; value queries compare against `equals`; a missing value is JSON null
+    [(capability)
+     (values
+      (equal? (capability-value credential
+                                (hash-ref query 'product)
+                                (hash-ref query 'name)
+                                #:default 'null
+                                #:product-family (hash-ref query 'product_family #f)
+                                #:at at
+                                #:version (hash-ref query 'version #f)
+                                #:installation-id installation-id
+                                #:activation activation
+                                #:trial-extensions extensions)
+              (hash-ref query 'equals))
+      '())]
+    [(limit)
+     (values
+      (equal? (limit-value credential
+                           (hash-ref query 'name)
+                           #:default 'null
+                           #:at at
+                           #:version (hash-ref query 'version #f)
+                           #:installation-id installation-id
+                           #:activation activation
+                           #:trial-extensions extensions)
+              (hash-ref query 'equals))
+      '())]
     [(usable)
      (define status
        (credential-status credential

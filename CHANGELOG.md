@@ -43,6 +43,11 @@
   `not-a-credential.permit.json` (`payload-reject`, genuine signature over
   non-credential bytes), and `foreign-issuer.permit.json`
   (`issuer-mismatch-reject`, genuine signature under a foreign issuer).
+- Cover the policy functions that had no cross-language vector: `edition`,
+  `addon`, `capability`, and `limit` conformance queries (twelve cases,
+  including scope through a product family, the version-context fail-closed
+  rule, and null for an unset value), implemented in the C runner so both
+  sides decide identically.
 - Name Commerce as the family commercial-management owner and define the
   one-way `Commerce issuer adapter -> permit/issuer` boundary without moving
   payment, account, delivery, or framework behavior into Permit.

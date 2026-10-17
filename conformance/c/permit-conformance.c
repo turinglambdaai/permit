@@ -1941,6 +1941,93 @@ static int update_entitled(const Json *claims, const char *product,
   return window_allows(claims, "updates_through", published_at);
 }
 
+static int edition_entitled(const Json *claims, const char *product,
+                            const char *edition, const char *at,
+                            const char *product_family, const char *version,
+                            const char *installation_id, const Json *activation,
+                            const Json **extensions, size_t extension_n) {
+  if (!base_policy_ok(claims, at, installation_id, activation, extensions,
+                      extension_n, version)) return 0;
+  const Json *grants = obj_get(claims, "grants");
+  for (size_t i = 0; i < grants->n; i++) {
+    const Json *grant = grants->items[i];
+    if (!grant_matches_scope(grant, product, product_family)) continue;
+    const Json *e = obj_get(grant, "edition");
+    if (e && e->kind == J_STRING && str_equals(e->str, edition)) return 1;
+  }
+  return 0;
+}
+
+static int addon_entitled(const Json *claims, const char *product,
+                          const char *addon, const char *at,
+                          const char *product_family, const char *version,
+                          const char *installation_id, const Json *activation,
+                          const Json **extensions, size_t extension_n) {
+  if (!base_policy_ok(claims, at, installation_id, activation, extensions,
+                      extension_n, version)) return 0;
+  const Json *grants = obj_get(claims, "grants");
+  for (size_t i = 0; i < grants->n; i++) {
+    const Json *grant = grants->items[i];
+    if (!grant_matches_scope(grant, product, product_family)) continue;
+    if (string_list_contains(obj_get(grant, "addons"), addon)) return 1;
+  }
+  return 0;
+}
+
+/* Scalar equality for conformance expectations: null, booleans, strings,
+ * and numbers (an integer and a real compare by value). */
+static int json_scalar_equals(const Json *a, const Json *b) {
+  if (!a || !b) return 0;
+  if (a->kind == J_NULL || b->kind == J_NULL) return a->kind == b->kind;
+  if (a->kind == J_BOOL && b->kind == J_BOOL) return a->boolean == b->boolean;
+  if (a->kind == J_STRING && b->kind == J_STRING) return str_equals(a->str, b->str);
+  if ((a->kind == J_INT || a->kind == J_REAL) && (b->kind == J_INT || b->kind == J_REAL)) {
+    double x = a->kind == J_INT ? (double)a->integer : a->real;
+    double y = b->kind == J_INT ? (double)b->integer : b->real;
+    return x == y;
+  }
+  return 0;
+}
+
+/* The capability value across matching grants, or NULL when none grants it.
+ * Conflicting values fail closed: *conflict is set and NULL is returned. */
+static const Json *capability_value(const Json *claims, const char *product,
+                                    const char *name, const char *at,
+                                    const char *product_family, const char *version,
+                                    const char *installation_id, const Json *activation,
+                                    const Json **extensions, size_t extension_n,
+                                    int *conflict) {
+  *conflict = 0;
+  if (!base_policy_ok(claims, at, installation_id, activation, extensions,
+                      extension_n, version)) return NULL;
+  const Json *grants = obj_get(claims, "grants");
+  const Json *found = NULL;
+  for (size_t i = 0; i < grants->n; i++) {
+    const Json *grant = grants->items[i];
+    if (!grant_matches_scope(grant, product, product_family)) continue;
+    const Json *v = obj_get(obj_get(grant, "capabilities"), name);
+    if (!v) continue;
+    if (found && !json_scalar_equals(found, v)) {
+      *conflict = 1;
+      return NULL;
+    }
+    found = v;
+  }
+  return found;
+}
+
+/* The named limit, or NULL when the credential sets none (JSON null). */
+static const Json *limit_value(const Json *claims, const char *name, const char *at,
+                               const char *version, const char *installation_id,
+                               const Json *activation, const Json **extensions,
+                               size_t extension_n) {
+  if (!base_policy_ok(claims, at, installation_id, activation, extensions,
+                      extension_n, version)) return NULL;
+  const Json *v = obj_get(obj_get(obj_get(claims, "constraints"), "limits"), name);
+  if (!v || v->kind == J_NULL) return NULL;
+  return v;
+}
+
 /* ------------------------------------------------------------------ */
 /* Conformance driver                                                  */
 /* ------------------------------------------------------------------ */
@@ -2306,6 +2393,44 @@ static void run_conformance(const char *dir, const TrustStore *store) {
               installation_id, activation_claims, extensions, extension_n);
         } else if (str_equals(kind, "version")) {
           actual = version_policy_allowed(claims, obj_get(query, "version")->str);
+        } else if (str_equals(kind, "edition")) {
+          actual = edition_entitled(
+              claims, obj_get(query, "product")->str, obj_get(query, "edition")->str, at,
+              obj_get(query, "product_family") ? obj_get(query, "product_family")->str : NULL,
+              obj_get(query, "version") ? obj_get(query, "version")->str : NULL,
+              installation_id, activation_claims, extensions, extension_n);
+        } else if (str_equals(kind, "addon")) {
+          actual = addon_entitled(
+              claims, obj_get(query, "product")->str, obj_get(query, "addon")->str, at,
+              obj_get(query, "product_family") ? obj_get(query, "product_family")->str : NULL,
+              obj_get(query, "version") ? obj_get(query, "version")->str : NULL,
+              installation_id, activation_claims, extensions, extension_n);
+        } else if (str_equals(kind, "capability")) {
+          /* equals is a JSON scalar; a missing capability compares as null */
+          int conflict = 0;
+          const Json *value = capability_value(
+              claims, obj_get(query, "product")->str, obj_get(query, "name")->str, at,
+              obj_get(query, "product_family") ? obj_get(query, "product_family")->str : NULL,
+              obj_get(query, "version") ? obj_get(query, "version")->str : NULL,
+              installation_id, activation_claims, extensions, extension_n, &conflict);
+          const Json *equals = obj_get(query, "equals");
+          if (conflict) {
+            actual = 0;
+            evaluated = 0;
+            printf("         capability values conflict across grants\n");
+          } else if (!value) {
+            actual = equals && equals->kind == J_NULL;
+          } else {
+            actual = json_scalar_equals(value, equals);
+          }
+        } else if (str_equals(kind, "limit")) {
+          const Json *value = limit_value(
+              claims, obj_get(query, "name")->str, at,
+              obj_get(query, "version") ? obj_get(query, "version")->str : NULL,
+              installation_id, activation_claims, extensions, extension_n);
+          const Json *equals = obj_get(query, "equals");
+          actual = value ? json_scalar_equals(value, equals)
+                         : (equals && equals->kind == J_NULL);
         } else {
           fprintf(stderr, "unknown conformance query kind: %s\n", kind);
           exit(2);

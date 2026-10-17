@@ -67,6 +67,24 @@ itself is refused, here for aliasing one public key under two ids) and
 `duplicate-json-reject` (the envelope reader refuses duplicate members;
 the C runner reports it as `ERR_JSON_STRUCTURAL`).
 
+### Policy queries
+
+Boolean cases carry a `query` whose `kind` selects the policy function and
+whose remaining members are its arguments. Every kind evaluates on top of the
+same base policy (time windows, activation binding, version context — a
+restricted version policy with no `version` in the query fails closed):
+
+| `kind` | Function | Arguments |
+|---|---|---|
+| `usable` | `credential-status` | optional `expected_reasons` pins the status reasons |
+| `feature` | `feature-entitled?` | `product`, `feature`, optional `published_at` |
+| `update` | `update-entitled?` | `product`, `published_at` |
+| `version` | `version-allowed?` | `version` |
+| `edition` | `edition-entitled?` | `product`, `edition`, optional `product_family` |
+| `addon` | `addon-entitled?` | `product`, `addon`, optional `product_family` |
+| `capability` | `capability-value` | `product`, `name`, `equals` — true when the granted value equals it; a capability no matching grant sets compares as `null` |
+| `limit` | `limit-value` | `name`, `equals` — true when the limit equals it; an unset limit compares as `null` |
+
 The policy corpus additionally fixes inclusive cutoff behavior, missing-context fail-closed behavior, activation installation binding, exact offline-grace boundaries, signed-trial expiry, and idempotent trial extensions.
 
 ## What is normative
