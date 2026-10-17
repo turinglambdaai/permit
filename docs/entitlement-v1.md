@@ -159,6 +159,8 @@ credential_id  = cred_2027_renewal (new)
 revision       = 3                 (increased)
 ```
 
+The reference issuer spells this as `successor-payload` in `permit/issuer`: the previous payload supplies `entitlement_id`, `issuer`, `type`, and every value the caller does not replace; `revision` advances by one. A withdrawal after a refund is the same operation with constraints that have already expired — it reaches connected clients, and does not claim to revoke an offline one. See [decision 0001](decisions/0001-issuer-rights-snapshots.md).
+
 Applications may select the highest revision they have received. They must not claim that this revokes hidden or never-refreshed offline revisions. Timely downgrade or revocation requires a management mechanism such as activation leases or signed revocation state.
 
 

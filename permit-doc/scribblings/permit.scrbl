@@ -259,6 +259,115 @@ Serializes an issued credential as its Protocol v1 JSON envelope. This is the
 supported programmatic path from safe issuance to storage or delivery.
 }
 
+@subsection{Rights snapshots}
+
+An issuer builds a complete rights snapshot, serializes it once, and hands
+those bytes to @racket[issue-credential]. These constructors spell the closed
+entitlement schema so that adapters never do; every field is an explicit
+keyword with a @racket['null] or empty default wherever the schema allows
+one. See
+@hyperlink["https://github.com/turinglambdaai/permit/blob/main/docs/decisions/0001-issuer-rights-snapshots.md"]{decision
+0001} for the boundary this layer defines.
+
+@defproc[(subject [#:type type string?]
+                  [#:id id string?]
+                  [#:display display (or/c string? 'null) 'null])
+         jsexpr?]{
+A credential subject. @racket[type] is one of @racket["person"],
+@racket["organization"], @racket["account"], @racket["device"],
+@racket["installation"], or @racket["anonymous"]; @racket[id] is the
+issuer's stable opaque identifier.
+}
+
+@defproc[(grant [#:products products (listof string?) '()]
+                [#:product-families product-families (listof string?) '()]
+                [#:edition edition (or/c string? 'null) 'null]
+                [#:feature-policy feature-policy (or/c "explicit" "published-through") "explicit"]
+                [#:features features (listof string?) '()]
+                [#:addons addons (listof string?) '()]
+                [#:capabilities capabilities (hash/c symbol? (or/c string? boolean? rational?)) (hasheq)])
+         jsexpr?]{
+One grant. The scope must name at least one product or product family;
+@racket["published-through"] grants leave @racket[features] empty and let
+@racket[features_through] decide.
+}
+
+@defproc[(constraints [#:use-expires-at use-expires-at (or/c string? 'null) 'null]
+                      [#:updates-through updates-through (or/c string? 'null) 'null]
+                      [#:features-through features-through (or/c string? 'null) 'null]
+                      [#:version-min version-min (or/c string? 'null) 'null]
+                      [#:version-max version-max (or/c string? 'null) 'null]
+                      [#:named-seats named-seats (or/c exact-nonnegative-integer? 'null) 'null]
+                      [#:device-activations device-activations (or/c exact-nonnegative-integer? 'null) 'null]
+                      [#:concurrent-seats concurrent-seats (or/c exact-nonnegative-integer? 'null) 'null]
+                      [#:installation-id installation-id (or/c string? 'null) 'null]
+                      [#:activation-required? activation-required? boolean? #f])
+         jsexpr?]{
+The three independent windows, version policy, limits, and installation
+binding. All defaults describe a perpetual, unlimited, unbound right.
+}
+
+@defproc[(entitlement-payload [#:issuer issuer string?]
+                              [#:credential-id credential-id string?]
+                              [#:entitlement-id entitlement-id string?]
+                              [#:subject subject jsexpr?]
+                              [#:grants grants (listof jsexpr?)]
+                              [#:issued-at issued-at string?]
+                              [#:type type (or/c "entitlement" "trial") "entitlement"]
+                              [#:revision revision exact-nonnegative-integer? 0]
+                              [#:channel channel string? (if (equal? type "trial") "trial" "commercial")]
+                              [#:constraints constraints jsexpr? (constraints)]
+                              [#:not-before not-before (or/c string? 'null) 'null]
+                              [#:extensions extensions jsexpr? (hasheq)])
+         jsexpr?]{
+A complete entitlement-like payload. The result has already passed
+@racket[validate-credential-claims]: an invalid snapshot raises the schema
+error at the call site instead of inside the signer.
+}
+
+@defproc[(successor-payload [previous jsexpr?]
+                            [#:credential-id credential-id string?]
+                            [#:issued-at issued-at string?]
+                            [#:subject subject (or/c jsexpr? #f) #f]
+                            [#:channel channel (or/c string? #f) #f]
+                            [#:grants grants (or/c (listof jsexpr?) #f) #f]
+                            [#:constraints constraints (or/c jsexpr? #f) #f]
+                            [#:not-before not-before (or/c string? 'null) 'null]
+                            [#:extensions extensions (or/c jsexpr? #f) #f])
+         jsexpr?]{
+The next revision of an existing lineage, the only supported spelling of
+renewal, plan change, seat change, and withdrawal. @racket[entitlement_id],
+@racket[issuer], and @racket[type] are inherited and cannot be replaced;
+@racket[revision] becomes @racket[previous]'s plus one; each @racket[#f]
+keyword keeps the previous value. A withdrawal is a successor whose
+@racket[constraints] already expired — Permit does not pretend to revoke
+offline.
+}
+
+@defproc[(payload->bytes [payload jsexpr?]) bytes?]{
+The one serialization step. Sign and store exactly these bytes; the
+protocol's exact-byte rule forbids re-serializing the jsexpr afterwards.
+}
+
+@subsection{Issuance failures}
+
+@defstruct*[(exn:fail:permit:issue exn:fail) ([reason symbol?])]{
+Every refusal by @racket[issue-credential] after its argument checks.
+@racket[reason] is one of @racket[issue-failure-reasons]; the message keeps
+the @racket[raise-arguments-error] layout, so callers that matched message
+text keep working. Argument-shape errors (a non-@racket[bytes?] payload, a
+non-@racket[trust-store?] store) remain ordinary contract errors.
+}
+
+@defthing[issue-failure-reasons (listof symbol?)]{
+@racket['(schema issuer key-unknown key-status key-window key-purpose key-mismatch)]
+— the payload failed schema validation; its @racket[issuer] differs from the
+trust store's; the @racket[key-id] is not in the store; the key is not
+@racket["active"]; @racket[issued_at] falls outside the key's issuance
+window; the key's purposes do not include the credential type; the private
+key does not correspond to the store's public key.
+}
+
 @section{Command line}
 
 @verbatim|{raco permit keygen --private k.der --public pub.der \

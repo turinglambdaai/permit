@@ -17,6 +17,18 @@
 
 ### Added
 
+- Add the issuer-side rights-snapshot layer to `permit/issuer`
+  (`docs/decisions/0001`): `subject`, `grant`, `constraints`, and
+  `entitlement-payload` spell the closed entitlement schema with validation
+  at the call site; `successor-payload` is the one supported spelling of a
+  new revision in an existing lineage (identity inherited, revision
+  advanced, everything else replaceable); `payload->bytes` is the single
+  serialization step the exact-byte rule allows. This is the boundary
+  Commerce's issuer adapter consumes instead of assembling JSON.
+- Raise `exn:fail:permit:issue` from `issue-credential` with a `reason`
+  (`issue-failure-reasons`: schema, issuer, key-unknown, key-status,
+  key-window, key-purpose, key-mismatch) so adapters record refusals
+  without parsing messages. Messages and fail-closed behavior are unchanged.
 - Name Commerce as the family commercial-management owner and define the
   one-way `Commerce issuer adapter -> permit/issuer` boundary without moving
   payment, account, delivery, or framework behavior into Permit.

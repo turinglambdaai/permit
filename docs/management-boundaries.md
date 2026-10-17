@@ -26,6 +26,11 @@ delivery:
 - air-gapped enterprise request/response workflows.
 
 Commerce outputs signed Permit credentials through an explicit issuer adapter.
+The adapter builds each rights snapshot with the `permit/issuer` constructors
+(`entitlement-payload`, `successor-payload` for the next revision of a
+lineage) rather than assembling the closed schema itself, and records
+issuance refusals by the `reason` of `exn:fail:permit:issue`; see
+[decision 0001](decisions/0001-issuer-rights-snapshots.md).
 It must not become a required online oracle for products that promise offline
 use. Login, customer identity, and account recovery stay in the product or an
 identity service; Commerce consumes stable opaque subject ids rather than
