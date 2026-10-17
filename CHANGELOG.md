@@ -35,6 +35,14 @@
   refused license file by reason instead of matching message text; the CLI
   prints the reason on its own line. Messages and fail-closed behavior are
   unchanged; time outcomes remain `credential-status` reasons.
+- Make the rejection class a cross-language contract. Each `expected`
+  rejection in `conformance.json` is one verify reason and one C `Outcome`
+  (table in `test-vectors/README.md`); the Racket vector test asserts the
+  reason instead of matching message text. Three vectors cover the classes
+  that had none: `malformed-envelope.json` (`envelope-reject`),
+  `not-a-credential.permit.json` (`payload-reject`, genuine signature over
+  non-credential bytes), and `foreign-issuer.permit.json`
+  (`issuer-mismatch-reject`, genuine signature under a foreign issuer).
 - Name Commerce as the family commercial-management owner and define the
   one-way `Commerce issuer adapter -> permit/issuer` boundary without moving
   payment, account, delivery, or framework behavior into Permit.

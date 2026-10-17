@@ -37,7 +37,35 @@ A conforming implementation must also:
 - reject it with `next-future-trust-store.json` because its authenticated `issued_at` predates the key's issuance window;
 - reject `duplicate-key-alias-trust-store.json`;
 - reject an entitlement under `activation-only-trust-store.json`;
-- reject `duplicate-member-envelope.json` before authorization.
+- reject `duplicate-member-envelope.json` before authorization;
+- reject `malformed-envelope.json` (no payload or signature member) as an envelope, before any key lookup;
+- reject `not-a-credential.permit.json`: its signature is genuine, and the authenticated bytes are not a credential;
+- reject `foreign-issuer.permit.json`: its signature is genuine, and its signed `issuer` is not the trust store's.
+
+### Rejection classes
+
+Each `expected` value in `conformance.json` other than `verify` is a
+rejection class. The classes are the verifier pipeline's stages in order, so
+an implementation that reports the class also reports which guard refused;
+two implementations must report the same class for the same input, not just
+"rejected". The reference Racket verifier exposes the class as the `reason`
+of `exn:fail:permit:verify`; the C runner as its `Outcome`.
+
+| `expected` | Racket reason | C outcome | Guard |
+|---|---|---|---|
+| `envelope-reject` | `envelope` | `ERR_ENVELOPE` | the wrapper is not a Protocol v1 envelope |
+| `unknown-key-reject` | `key-unknown` | `ERR_UNKNOWN_KEY` | `key_id` not in the trust store |
+| `revoked-key-reject` | `key-revoked` | `ERR_REVOKED_KEY` | the key is revoked |
+| `signature-reject` | `signature` | `ERR_SIGNATURE` | Ed25519 does not verify the exact payload bytes |
+| `payload-reject` | `schema` | `ERR_PAYLOAD` | the authenticated bytes fail strict parsing or schema validation |
+| `issuer-mismatch-reject` | `issuer` | `ERR_ISSUER_MISMATCH` | the signed `issuer` differs from the store's |
+| `issuance-window-reject` | `key-window` | `ERR_ISSUANCE_WINDOW` | `issued_at` outside the key's issuance window |
+| `key-purpose-reject` | `key-purpose` | `ERR_KEY_PURPOSE` | the key may not sign this credential type |
+
+Two classes sit before the pipeline: `trust-store-reject` (the trust store
+itself is refused, here for aliasing one public key under two ids) and
+`duplicate-json-reject` (the envelope reader refuses duplicate members;
+the C runner reports it as `ERR_JSON_STRUCTURAL`).
 
 The policy corpus additionally fixes inclusive cutoff behavior, missing-context fail-closed behavior, activation installation binding, exact offline-grace boundaries, signed-trial expiry, and idempotent trial extensions.
 

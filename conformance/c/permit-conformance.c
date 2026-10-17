@@ -2012,6 +2012,9 @@ static Outcome expect_outcome(const char *expected) {
   if (str_equals(expected, "key-purpose-reject")) return ERR_KEY_PURPOSE;
   if (str_equals(expected, "trust-store-reject")) return ERR_TRUST_STORE;
   if (str_equals(expected, "duplicate-json-reject")) return ERR_JSON_STRUCTURAL;
+  if (str_equals(expected, "envelope-reject")) return ERR_ENVELOPE;
+  if (str_equals(expected, "payload-reject")) return ERR_PAYLOAD;
+  if (str_equals(expected, "issuer-mismatch-reject")) return ERR_ISSUER_MISMATCH;
   return (Outcome)-1;
 }
 

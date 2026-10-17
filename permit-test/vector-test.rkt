@@ -203,14 +203,27 @@
 ;; Execute the language-neutral conformance description as data. Other
 ;; implementations can use a different harness, but the checked-in expected
 ;; outcomes must never drift away from the reference implementation.
-(define rejection-patterns
-  (hash "signature-reject" #rx"invalid Ed25519 signature"
-        "unknown-key-reject" #rx"unknown key_id"
-        "revoked-key-reject" #rx"revoked"
-        "issuance-window-reject" #rx"issuance window"
-        "trust-store-reject" #rx"same public key"
-        "key-purpose-reject" #rx"not authorized for credential type"
-        "duplicate-json-reject" #rx"duplicate JSON object member"))
+;;
+;; Each rejection class is one verify-failure reason (decision 0002); the
+;; vector asserts the reason, never the message text. The C runner's Outcome
+;; enum carries the same classes, so this table is the cross-language reason
+;; contract. trust-store-reject and duplicate-json-reject are refusals of
+;; the trust store and of the envelope reader respectively, before
+;; verify-credential's pipeline begins.
+(define rejection-reasons
+  (hash "envelope-reject" 'envelope
+        "unknown-key-reject" 'key-unknown
+        "revoked-key-reject" 'key-revoked
+        "signature-reject" 'signature
+        "payload-reject" 'schema
+        "issuer-mismatch-reject" 'issuer
+        "issuance-window-reject" 'key-window
+        "key-purpose-reject" 'key-purpose))
+
+(define (verify-reason thunk)
+  (with-handlers ([exn:fail:permit:verify? exn:fail:permit-reason])
+    (thunk)
+    'verified))
 
 (define (vector-path filename)
   (build-path vector-root filename))
@@ -281,18 +294,18 @@
   (cond
     [(equal? expected "verify")
      (check-not-exn (lambda () (verify-case-credential test-case)) case-name)]
-    [(hash-has-key? rejection-patterns expected)
-     (define pattern (hash-ref rejection-patterns expected))
-     (check-exn
-      pattern
-      (lambda ()
-        (cond
-          [(equal? expected "trust-store-reject")
-           (read-trust-store (vector-path (hash-ref test-case 'trust_store)))]
-          [(equal? expected "duplicate-json-reject")
-           (read-envelope (vector-path (hash-ref test-case 'credential)))]
-          [else (verify-case-credential test-case)]))
-      case-name)]
+    [(hash-has-key? rejection-reasons expected)
+     (check-equal? (verify-reason (lambda () (verify-case-credential test-case)))
+                   (hash-ref rejection-reasons expected)
+                   case-name)]
+    [(equal? expected "trust-store-reject")
+     (check-exn #rx"same public key"
+                (lambda () (read-trust-store (vector-path (hash-ref test-case 'trust_store))))
+                case-name)]
+    [(equal? expected "duplicate-json-reject")
+     (check-exn #rx"duplicate JSON object member"
+                (lambda () (read-envelope (vector-path (hash-ref test-case 'credential))))
+                case-name)]
     [(boolean? expected)
      (define-values (actual reasons) (evaluate-policy-case test-case))
      (check-equal? actual expected case-name)

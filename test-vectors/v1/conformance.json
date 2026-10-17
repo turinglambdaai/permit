@@ -55,6 +55,24 @@
       "expected": "duplicate-json-reject"
     },
     {
+      "name": "malformed-envelope",
+      "credential": "malformed-envelope.json",
+      "trust_store": "trust-store.json",
+      "expected": "envelope-reject"
+    },
+    {
+      "name": "authenticated-but-not-a-credential",
+      "credential": "not-a-credential.permit.json",
+      "trust_store": "trust-store.json",
+      "expected": "payload-reject"
+    },
+    {
+      "name": "foreign-issuer",
+      "credential": "foreign-issuer.permit.json",
+      "trust_store": "trust-store.json",
+      "expected": "issuer-mismatch-reject"
+    },
+    {
       "name": "maintenance-cutoff-inclusive",
       "credential": "entitlement.permit.json",
       "trust_store": "trust-store.json",

@@ -39,7 +39,11 @@
   '(("managed-entitlement-payload.json" "managed-entitlement.permit.json")
     ("activation-payload.json" "activation.permit.json")
     ("trial-payload.json" "trial.permit.json")
-    ("trial-extension-payload.json" "trial-extension.permit.json")))
+    ("trial-extension-payload.json" "trial-extension.permit.json")
+    ;; negative vectors that need a genuine signature: the rejection must
+    ;; happen after authentication, at the issuer and schema stages
+    ("foreign-issuer-payload.json" "foreign-issuer.permit.json")
+    ("not-a-credential-payload.json" "not-a-credential.permit.json")))
 
 (provide generate-vectors!)
 
