@@ -43,7 +43,12 @@
     ;; negative vectors that need a genuine signature: the rejection must
     ;; happen after authentication, at the issuer and schema stages
     ("foreign-issuer-payload.json" "foreign-issuer.permit.json")
-    ("not-a-credential-payload.json" "not-a-credential.permit.json")))
+    ("not-a-credential-payload.json" "not-a-credential.permit.json")
+    ;; lineage selection: a third revision and a conflicting same-revision
+    ;; statement over the managed lineage
+    ("managed-entitlement-r3-payload.json" "managed-entitlement-r3.permit.json")
+    ("managed-entitlement-r3-conflict-payload.json"
+     "managed-entitlement-r3-conflict.permit.json")))
 
 (provide generate-vectors!)
 

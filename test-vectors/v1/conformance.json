@@ -431,6 +431,50 @@
         "version": "2.0.0"
       },
       "expected": false
+    },
+    {
+      "name": "lineage-selects-highest-revision",
+      "credentials": [
+        "managed-entitlement.permit.json",
+        "managed-entitlement-r3.permit.json"
+      ],
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "lineage",
+        "selects": "cred_managed_vector_02"
+      },
+      "expected": true
+    },
+    {
+      "name": "lineage-order-independent",
+      "credentials": [
+        "managed-entitlement-r3.permit.json",
+        "managed-entitlement.permit.json"
+      ],
+      "trust_store": "trust-store.json",
+      "query": {
+        "kind": "lineage",
+        "selects": "cred_managed_vector_02"
+      },
+      "expected": true
+    },
+    {
+      "name": "lineage-conflicting-highest-revision",
+      "credentials": [
+        "managed-entitlement-r3.permit.json",
+        "managed-entitlement-r3-conflict.permit.json"
+      ],
+      "trust_store": "trust-store.json",
+      "expected": "lineage-conflict-reject"
+    },
+    {
+      "name": "lineage-mixed-entitlements",
+      "credentials": [
+        "entitlement.permit.json",
+        "managed-entitlement.permit.json"
+      ],
+      "trust_store": "trust-store.json",
+      "expected": "lineage-mismatch-reject"
     }
   ]
 }

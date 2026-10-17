@@ -1595,7 +1595,9 @@ typedef enum {
   ERR_PAYLOAD,
   ERR_ISSUER_MISMATCH,
   ERR_ISSUANCE_WINDOW,
-  ERR_KEY_PURPOSE
+  ERR_KEY_PURPOSE,
+  ERR_LINEAGE_CONFLICT,
+  ERR_LINEAGE_MISMATCH
 } Outcome;
 
 static const char *outcome_name(Outcome o) {
@@ -1611,6 +1613,8 @@ static const char *outcome_name(Outcome o) {
     case ERR_ISSUER_MISMATCH: return "issuer-mismatch-reject";
     case ERR_ISSUANCE_WINDOW: return "issuance-window-reject";
     case ERR_KEY_PURPOSE: return "key-purpose-reject";
+    case ERR_LINEAGE_CONFLICT: return "lineage-conflict-reject";
+    case ERR_LINEAGE_MISMATCH: return "lineage-mismatch-reject";
   }
   return "?";
 }
@@ -2028,6 +2032,40 @@ static const Json *limit_value(const Json *claims, const char *name, const char 
   return v;
 }
 
+/* Selects the newest statement of one entitlement lineage. Mirrors
+ * select-latest-entitlement: every statement must be an entitlement or
+ * trial of the same issuer and entitlement_id; the highest revision wins;
+ * two different payloads at that revision fail closed. */
+static Outcome select_latest(const Json **claims, const char **payloads, size_t n,
+                             size_t *selected) {
+  const char *entitlement_id = obj_get(claims[0], "entitlement_id")->str;
+  const char *issuer = obj_get(claims[0], "issuer")->str;
+  long long highest = -1;
+  for (size_t i = 0; i < n; i++) {
+    const char *type = obj_get(claims[i], "type")->str;
+    if (!str_equals(type, "entitlement") && !str_equals(type, "trial")) {
+      return ERR_LINEAGE_MISMATCH;
+    }
+    if (!str_equals(obj_get(claims[i], "entitlement_id")->str, entitlement_id) ||
+        !str_equals(obj_get(claims[i], "issuer")->str, issuer)) {
+      return ERR_LINEAGE_MISMATCH;
+    }
+    long long revision = obj_get(claims[i], "revision")->integer;
+    if (revision > highest) highest = revision;
+  }
+  size_t first = n;
+  for (size_t i = 0; i < n; i++) {
+    if (obj_get(claims[i], "revision")->integer != highest) continue;
+    if (first == n) {
+      first = i;
+    } else if (!str_equals(payloads[i], payloads[first])) {
+      return ERR_LINEAGE_CONFLICT;
+    }
+  }
+  *selected = first;
+  return VERIFY_OK;
+}
+
 /* ------------------------------------------------------------------ */
 /* Conformance driver                                                  */
 /* ------------------------------------------------------------------ */
@@ -2102,6 +2140,8 @@ static Outcome expect_outcome(const char *expected) {
   if (str_equals(expected, "envelope-reject")) return ERR_ENVELOPE;
   if (str_equals(expected, "payload-reject")) return ERR_PAYLOAD;
   if (str_equals(expected, "issuer-mismatch-reject")) return ERR_ISSUER_MISMATCH;
+  if (str_equals(expected, "lineage-conflict-reject")) return ERR_LINEAGE_CONFLICT;
+  if (str_equals(expected, "lineage-mismatch-reject")) return ERR_LINEAGE_MISMATCH;
   return (Outcome)-1;
 }
 
@@ -2260,6 +2300,43 @@ static void run_conformance(const char *dir, const TrustStore *store) {
       int ok = envelope == NULL && strstr(g_error, "duplicate JSON object member") != NULL;
       json_free(envelope);
       report(ok, "%s", name);
+      continue;
+    }
+    if (obj_get(tc, "credentials")) {
+      /* Lineage: verify every statement, then select. */
+      const Json *files = obj_get(tc, "credentials");
+      enum { MAX_LINEAGE = 8 };
+      const Json *lineage_claims[MAX_LINEAGE];
+      const char *lineage_payloads[MAX_LINEAGE];
+      Json *lineage_envelopes[MAX_LINEAGE] = {0};
+      size_t lineage_n = 0;
+      Outcome o = VERIFY_OK;
+      TrustStore *fresh_store = try_trust_store(dir, trust_store_name);
+      const TrustStore *case_store = fresh_store ? fresh_store : store;
+      for (size_t i = 0; i < files->n && i < MAX_LINEAGE && o == VERIFY_OK; i++) {
+        char *path = path_join(dir, files->items[i]->str);
+        const Json *claims = NULL;
+        o = verify_credential_file(path, case_store, &claims, &lineage_envelopes[i]);
+        free(path);
+        if (o == VERIFY_OK) {
+          lineage_claims[lineage_n] = claims;
+          lineage_payloads[lineage_n] = obj_get(lineage_envelopes[i], "payload")->str;
+          lineage_n++;
+        }
+      }
+      size_t selected = 0;
+      if (o == VERIFY_OK) o = select_latest(lineage_claims, lineage_payloads, lineage_n, &selected);
+      if (expected_field->kind == J_STRING) {
+        Outcome want = expect_outcome(expected_field->str);
+        report(o == want, "%s (want %s, got %s)", name, outcome_name(want), outcome_name(o));
+      } else {
+        const char *selects = obj_get(query, "selects")->str;
+        int ok = o == VERIFY_OK &&
+                 str_equals(obj_get(lineage_claims[selected], "credential_id")->str, selects);
+        report(ok == expected_field->boolean, "%s", name);
+      }
+      for (size_t i = 0; i < MAX_LINEAGE; i++) json_free(lineage_envelopes[i]);
+      trust_store_free(fresh_store);
       continue;
     }
 

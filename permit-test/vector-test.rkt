@@ -335,6 +335,29 @@
             "unknown conformance query kind: ~a"
             (hash-ref query 'kind))]))
 
+;; Lineage cases present several credentials of one entitlement and select
+;; the newest; conflicting or unrelated statements fail closed.
+(define (lineage-case test-case)
+  (define case-name (hash-ref test-case 'name))
+  (define expected (hash-ref test-case 'expected))
+  (define store (read-trust-store (vector-path (hash-ref test-case 'trust_store))))
+  (define credentials
+    (for/list ([filename (in-list (hash-ref test-case 'credentials))])
+      (verify-credential (vector-path filename) store)))
+  (cond
+    [(equal? expected "lineage-conflict-reject")
+     (check-exn #rx"conflicting credentials share the highest revision"
+                (lambda () (select-latest-entitlement credentials))
+                case-name)]
+    [(equal? expected "lineage-mismatch-reject")
+     (check-exn #rx"different entitlement lineages"
+                (lambda () (select-latest-entitlement credentials))
+                case-name)]
+    [else
+     (check-equal? (verified-credential-id (select-latest-entitlement credentials))
+                   (hash-ref (hash-ref test-case 'query) 'selects)
+                   case-name)]))
+
 (define conformance
   (call-with-input-file conformance-path read-json))
 (check-equal? (hash-ref conformance 'protocol) "permit-conformance")
@@ -343,6 +366,7 @@
   (define expected (hash-ref test-case 'expected))
   (define case-name (hash-ref test-case 'name))
   (cond
+    [(hash-has-key? test-case 'credentials) (lineage-case test-case)]
     [(equal? expected "verify")
      (check-not-exn (lambda () (verify-case-credential test-case)) case-name)]
     [(hash-has-key? rejection-reasons expected)

@@ -84,6 +84,13 @@ restricted version policy with no `version` in the query fails closed):
 | `addon` | `addon-entitled?` | `product`, `addon`, optional `product_family` |
 | `capability` | `capability-value` | `product`, `name`, `equals` — true when the granted value equals it; a capability no matching grant sets compares as `null` |
 | `limit` | `limit-value` | `name`, `equals` — true when the limit equals it; an unset limit compares as `null` |
+| `lineage` | `select-latest-entitlement` | the case lists `credentials` instead of one `credential`; `selects` names the `credential_id` the newest revision must have |
+
+Lineage cases can also expect a rejection class of their own, raised after
+every statement verified: `lineage-conflict-reject` (two different payloads
+share the highest revision) or `lineage-mismatch-reject` (the statements
+are not all entitlements or trials of one issuer and `entitlement_id`). The
+C runner reports them as `ERR_LINEAGE_CONFLICT` and `ERR_LINEAGE_MISMATCH`.
 
 The policy corpus additionally fixes inclusive cutoff behavior, missing-context fail-closed behavior, activation installation binding, exact offline-grace boundaries, signed-trial expiry, and idempotent trial extensions.
 

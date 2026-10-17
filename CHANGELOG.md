@@ -48,6 +48,13 @@
   including scope through a product family, the version-context fail-closed
   rule, and null for an unset value), implemented in the C runner so both
   sides decide identically.
+- Cover lineage selection in the vectors: `lineage` cases present several
+  statements of one entitlement and name the `credential_id` the newest
+  revision must have, in either order; `lineage-conflict-reject` and
+  `lineage-mismatch-reject` pin the fail-closed cases (two payloads at the
+  highest revision; statements from different lineages). The C runner
+  implements `select-latest-entitlement` for them. This closes the last
+  policy surface the security review found without independent C evidence.
 - Name Commerce as the family commercial-management owner and define the
   one-way `Commerce issuer adapter -> permit/issuer` boundary without moving
   payment, account, delivery, or framework behavior into Permit.
