@@ -263,7 +263,9 @@ not offline revocation.
 @defmodule[permit/issuer]
 
 The issuer surface is an explicit opt-in; the client facade above
-never exports private-key operations.
+never exports private-key operations. It re-exports @racket[trust-store?],
+@racket[read-trust-store], and @racket[jsexpr->trust-store] so an issuer
+adapter needs only this module.
 
 @defproc[(generate-ed25519-keypair)
          (values pk-key? pk-key?)]{}

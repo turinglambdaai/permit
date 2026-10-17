@@ -68,6 +68,35 @@ raco permit issue --key private-key.der --key-id entitlement-2026 --trust-store 
 
 `issue` rejects a mismatched issuer, wrong private key, inactive key, disallowed credential type, invalid issuance time, or invalid payload schema. Use the lower-level `sign` command only for recovery or conformance tooling where those checks are intentionally handled elsewhere.
 
+### Issuing from Racket
+
+When issuance runs from a script or a service rather than by hand, build the payload with the constructors in `permit/issuer` instead of editing JSON. They spell the whole schema and validate it before anything is signed:
+
+```racket
+#lang racket/base
+
+(require permit/issuer)
+
+(define store (read-trust-store "trust-store.json"))
+(define key (read-ed25519-private-key "private-key.der"))
+
+(define payload
+  (entitlement-payload
+   #:issuer "com.example"
+   #:credential-id "cred_2026_0001"
+   #:entitlement-id "ent_customer_0001"
+   #:subject (subject #:type "person" #:id "cus_0001" #:display "ada@example.com")
+   #:grants (list (grant #:products '("example-app") #:edition "pro"))
+   #:constraints (constraints #:updates-through "2027-12-31T23:59:59Z")
+   #:issued-at "2026-10-01T00:00:00Z"))
+
+(write-issued-credential
+ (issue-credential (payload->bytes payload) key "entitlement-2026" store)
+ "entitlement.permit.json")
+```
+
+A renewal or plan change is `successor-payload` over the previous payload: it keeps the entitlement id, advances the revision, and takes the new constraints. If issuance is refused, `issue-credential` raises `exn:fail:permit:issue`; its `reason` (`exn:fail:permit-reason`) says which check failed.
+
 ## 5. Verify before trusting claims
 
 ```bash
@@ -103,7 +132,24 @@ The JSON result includes the overall usability decision, rejection reasons, and 
   (error 'startup "this installation is not entitled to the pro edition"))
 ```
 
-`verify-credential` either returns a sealed `verified-credential` or raises an error. Product policy functions accept that verified value, so untrusted JSON cannot accidentally enter the authorization path.
+`verify-credential` either returns a sealed `verified-credential` or raises `exn:fail:permit:verify`. Product policy functions accept that verified value, so untrusted JSON cannot accidentally enter the authorization path.
+
+The refusal carries a `reason`, so the message a customer sees can name what is wrong with the file instead of matching error text:
+
+```racket
+(define (describe-refusal e)
+  (case (exn:fail:permit-reason e)
+    [(signature)   "The license file has been modified."]
+    [(key-revoked) "The key that signed this license was withdrawn."]
+    [(issuer)      "This license was issued for another product."]
+    [(envelope schema) "This is not a license file."]
+    [else          "The license could not be verified."]))
+
+(with-handlers ([exn:fail:permit:verify? (lambda (e) (displayln (describe-refusal e)))])
+  (verify-credential "entitlement.permit.json" trust-store))
+```
+
+Expiry is not a refusal: an expired credential still verifies, and `credential-status` reports `use-expired` among its reasons, so the product can offer renewal instead of treating the file as broken.
 
 ## Choose the next model only when needed
 

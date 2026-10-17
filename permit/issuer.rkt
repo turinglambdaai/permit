@@ -19,6 +19,11 @@
          ed25519-private-key->der
          ed25519-public-key->der
          public-key->base64
+         ;; an issuer adapter needs the trust store too; re-exported so it
+         ;; requires only this module
+         trust-store?
+         read-trust-store
+         jsexpr->trust-store
          ;; rights snapshots (docs/decisions/0001)
          subject
          grant
