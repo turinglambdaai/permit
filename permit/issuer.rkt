@@ -2,6 +2,7 @@
 
 (require "crypto.rkt"
          "envelope.rkt"
+         "failure.rkt"
          "schema.rkt"
          "snapshot.rkt"
          "trust.rkt")
@@ -9,6 +10,7 @@
 (provide issued-credential?
          issue-credential
          write-issued-credential
+         (struct-out exn:fail:permit)
          (struct-out exn:fail:permit:issue)
          issue-failure-reasons
          generate-ed25519-keypair
@@ -35,26 +37,6 @@
     (raise-argument-error 'write-issued-credential "issued-credential?" credential))
   (write-envelope credential destination))
 
-;; Every refusal of safe issuance carries a reason an adapter can record
-;; without parsing the message. The message keeps the raise-arguments-error
-;; layout so existing message-matching callers keep working.
-(struct exn:fail:permit:issue exn:fail (reason) #:transparent)
-
-(define issue-failure-reasons
-  '(schema issuer key-unknown key-status key-window key-purpose key-mismatch))
-
-(define (raise-issue-error reason message . fields)
-  (define detail
-    (let loop ([fields fields] [acc '()])
-      (if (or (null? fields) (null? (cdr fields)))
-          (reverse acc)
-          (loop (cddr fields)
-                (cons (format "\n  ~a: ~v" (car fields) (cadr fields)) acc)))))
-  (raise (exn:fail:permit:issue
-          (apply string-append "issue-credential: " message detail)
-          (current-continuation-marks)
-          reason)))
-
 ;; Safe issuer path: unlike low-level envelope signing, this checks that the
 ;; payload is schema-valid, belongs to the configured issuer, is allowed by
 ;; the selected active key, falls inside that key's issuance window, and was
@@ -68,12 +50,7 @@
     (raise-argument-error 'issue-credential "non-empty string?" key-id))
 
   (define claims
-    (with-handlers ([exn:fail?
-                     (lambda (e)
-                       (raise (exn:fail:permit:issue (exn-message e)
-                                                     (exn-continuation-marks e)
-                                                     'schema)))])
-      (parse-credential-payload payload)))
+    (rewrap-as-issue-error 'schema (lambda () (parse-credential-payload payload))))
   (unless (equal? (hash-ref claims 'issuer) (trust-store-issuer store))
     (raise-issue-error 'issuer
                        "credential issuer does not match trust store"

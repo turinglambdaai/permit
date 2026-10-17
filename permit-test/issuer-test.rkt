@@ -259,7 +259,7 @@
 ;; ---- typed issuance failures ----
 
 (define (issue-reason thunk)
-  (with-handlers ([exn:fail:permit:issue? exn:fail:permit:issue-reason])
+  (with-handlers ([exn:fail:permit:issue? exn:fail:permit-reason])
     (thunk)
     'no-failure))
 

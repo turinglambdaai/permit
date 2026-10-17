@@ -725,3 +725,71 @@
                            #:grants
                            (list (hash-set default-grant 'capabilities
                                            (hasheq 'team-members +inf.0)))))))
+
+;; ---- typed verification failures (docs/decisions/0002) ----
+;; One case per reason, in pipeline order: the reason names the guard that
+;; refused. Time outcomes (expiry, not-yet-valid) stay status reasons.
+
+(define (verify-reason thunk)
+  (with-handlers ([exn:fail:permit:verify? exn:fail:permit-reason])
+    (thunk)
+    'no-failure))
+
+(check-equal? (verify-reason
+               (lambda () (verify-credential (open-input-string "not json") store)))
+              'envelope)
+(check-equal? (verify-reason
+               (lambda () (verify-credential (open-input-string "{\"protocol\":\"permit\"}") store)))
+              'envelope)
+(check-equal? (verify-reason
+               (lambda ()
+                 (verify-credential (struct-copy permit-envelope exact-envelope [key-id "nope"])
+                                    store)))
+              'key-unknown)
+(check-equal? (verify-reason (lambda () (verify-credential exact-envelope revoked-store)))
+              'key-revoked)
+(check-equal? (verify-reason
+               (lambda ()
+                 (verify-credential
+                  (struct-copy permit-envelope exact-envelope
+                               [payload (bytes-append exact-payload #" ")])
+                  store)))
+              'signature)
+;; authenticated but not a credential: the schema runs only after the signature
+(check-equal? (verify-reason
+               (lambda ()
+                 (verify-credential
+                  (make-signed-envelope "test-2026" #"{\"protocol\":\"permit\"}" private-key)
+                  store)))
+              'schema)
+(check-equal? (verify-reason (lambda () (verify-credential exact-envelope other-store)))
+              'issuer)
+;; a retired key still verifies history, but not a credential dated after its cutoff
+(check-equal? (verify-reason
+               (lambda ()
+                 (verify-credential
+                  (make-signed-envelope
+                   "test-2026"
+                   (json-bytes (entitlement "cred_late" (constraints)
+                                            #:issued-at "2027-01-01T00:00:00Z"))
+                   private-key)
+                  retired-window-store)))
+              'key-window)
+(check-equal? (verify-reason (lambda () (verify-credential exact-envelope activation-only-store)))
+              'key-purpose)
+(check-equal? (verify-reason (lambda () (verify-credential exact-envelope store)))
+              'no-failure)
+(check-equal? verify-failure-reasons
+              '(envelope key-unknown key-revoked signature schema issuer key-window key-purpose))
+
+;; the parent type catches a refusal from either side, and it is still exn:fail
+(check-true (exn:fail:permit?
+             (with-handlers ([exn:fail:permit? values])
+               (verify-credential exact-envelope revoked-store))))
+(check-true (exn:fail?
+             (with-handlers ([exn:fail? values])
+               (verify-credential exact-envelope revoked-store))))
+;; argument-shape mistakes are programmer errors, not refusals
+(check-false (exn:fail:permit?
+              (with-handlers ([exn:fail? values])
+                (verify-credential exact-envelope 'not-a-store))))

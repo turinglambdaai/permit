@@ -25,10 +25,16 @@
   advanced, everything else replaceable); `payload->bytes` is the single
   serialization step the exact-byte rule allows. This is the boundary
   Commerce's issuer adapter consumes instead of assembling JSON.
-- Raise `exn:fail:permit:issue` from `issue-credential` with a `reason`
-  (`issue-failure-reasons`: schema, issuer, key-unknown, key-status,
-  key-window, key-purpose, key-mismatch) so adapters record refusals
-  without parsing messages. Messages and fail-closed behavior are unchanged.
+- Type every refusal (`docs/decisions/0002`). `exn:fail:permit` carries a
+  `reason`; `verify-credential` raises `exn:fail:permit:verify` with one of
+  `verify-failure-reasons` (envelope, key-unknown, key-revoked, signature,
+  schema, issuer, key-window, key-purpose — pipeline order, so the reason
+  names the guard), and `issue-credential` raises `exn:fail:permit:issue`
+  with one of `issue-failure-reasons` (schema, issuer, key-unknown,
+  key-status, key-window, key-purpose, key-mismatch). Products translate a
+  refused license file by reason instead of matching message text; the CLI
+  prints the reason on its own line. Messages and fail-closed behavior are
+  unchanged; time outcomes remain `credential-status` reasons.
 - Name Commerce as the family commercial-management owner and define the
   one-way `Commerce issuer adapter -> permit/issuer` boundary without moving
   payment, account, delivery, or framework behavior into Permit.

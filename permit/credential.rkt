@@ -2,10 +2,14 @@
 
 (require racket/list
          "envelope.rkt"
+         "failure.rkt"
          "schema.rkt"
          "trust.rkt")
 
 (provide verified-credential?
+         (struct-out exn:fail:permit)
+         (struct-out exn:fail:permit:verify)
+         verify-failure-reasons
          verified-credential-claims
          verified-credential-payload
          verified-credential-key-id
@@ -27,32 +31,60 @@
 
 (struct verified-credential (claims payload key-id) #:transparent)
 
+;; The pipeline order is normative (protocol-v1 §3) and each refusal is
+;; attributed to the stage that noticed it, in verify-failure-reasons order.
 (define (verify-credential envelope-or-source store)
+  (unless (trust-store? store)
+    (raise-argument-error 'verify-credential "trust-store?" store))
   (define envelope
     (if (permit-envelope? envelope-or-source)
         envelope-or-source
-        (read-envelope envelope-or-source)))
+        (rewrap-as-verify-error 'envelope (lambda () (read-envelope envelope-or-source)))))
   ;; key_id is outside the signed payload, so it may select a public key but
   ;; cannot authorize anything by itself.
-  (define key (trust-store-key store (permit-envelope-key-id envelope)))
+  (define key-id (permit-envelope-key-id envelope))
+  (define key (hash-ref (trust-store-keys store) key-id #f))
+  (unless key
+    (raise-verify-error 'key-unknown "unknown key_id" "key_id" key-id))
+  (when (equal? (trust-key-status key) "revoked")
+    (raise-verify-error 'key-revoked "signing key is revoked" "key_id" key-id))
   (unless (verify-envelope-signature envelope (trust-key-public-key key))
-    (raise-arguments-error 'verify-credential
-                           "invalid Ed25519 signature"
-                           "key_id"
-                           (permit-envelope-key-id envelope)))
+    (raise-verify-error 'signature "invalid Ed25519 signature" "key_id" key-id))
   ;; Only cross the semantic parsing boundary after the exact payload bytes
   ;; have been authenticated.
-  (define claims (parse-credential-payload (permit-envelope-payload envelope)))
+  (define claims
+    (rewrap-as-verify-error 'schema
+                            (lambda () (parse-credential-payload (permit-envelope-payload envelope)))))
   (unless (equal? (hash-ref claims 'issuer) (trust-store-issuer store))
-    (raise-arguments-error 'verify-credential
-                           "credential issuer does not match trust store"
-                           "credential issuer"
-                           (hash-ref claims 'issuer)
-                           "trust store issuer"
-                           (trust-store-issuer store)))
-  (trust-key-authorize-issued-at! key (hash-ref claims 'issued_at))
-  (trust-key-authorize-type! key (hash-ref claims 'type))
-  (verified-credential claims (permit-envelope-payload envelope) (permit-envelope-key-id envelope)))
+    (raise-verify-error 'issuer
+                        "credential issuer does not match trust store"
+                        "credential issuer"
+                        (hash-ref claims 'issuer)
+                        "trust store issuer"
+                        (trust-store-issuer store)))
+  (define issued-at (hash-ref claims 'issued_at))
+  (unless (trust-key-valid-for-issued-at? key issued-at)
+    (raise-verify-error 'key-window
+                        "credential issued_at falls outside signing-key issuance window"
+                        "key_id"
+                        key-id
+                        "issued_at"
+                        issued-at
+                        "key_not_before"
+                        (trust-key-not-before key)
+                        "key_not_after"
+                        (trust-key-not-after key)))
+  (define type (hash-ref claims 'type))
+  (unless (member type (trust-key-purposes key))
+    (raise-verify-error 'key-purpose
+                        "signing key is not authorized for credential type"
+                        "key_id"
+                        key-id
+                        "credential_type"
+                        type
+                        "allowed_purposes"
+                        (trust-key-purposes key)))
+  (verified-credential claims (permit-envelope-payload envelope) key-id))
 
 (define (verified-credential-type credential)
   (hash-ref (verified-credential-claims credential) 'type))

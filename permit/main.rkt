@@ -8,6 +8,9 @@
 
 (provide verified-credential?
          verify-credential
+         (struct-out exn:fail:permit)
+         (struct-out exn:fail:permit:verify)
+         verify-failure-reasons
          verified-credential-type
          verified-credential-id
          verified-credential-issuer

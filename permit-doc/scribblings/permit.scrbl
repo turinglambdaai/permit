@@ -82,8 +82,10 @@ across languages.
                             [store trust-store?])
          verified-credential?]{
 Verifies signature, trust key, issuer, key purpose, and key issuance
-window, then parses and schema-checks the payload. Any failure raises
-@racket[exn:fail] — an invalid credential is an error, not a boolean.
+window, then parses and schema-checks the payload. Any refusal raises
+@racket[exn:fail:permit:verify] — an invalid credential is an error, not a
+boolean — with a @racket[reason] naming the guard; see
+@secref["verification-failures"].
 }
 
 @defproc[(verified-credential? [v any/c]) boolean?]{
@@ -114,6 +116,41 @@ Canonical UTC timestamp; @racket[#f] means the right does not expire.
 }
 @defproc[(verified-credential-updates-through [c verified-credential?]) (or/c string? #f)]{}
 @defproc[(verified-credential-features-through [c verified-credential?]) (or/c string? #f)]{}
+
+@subsection[#:tag "verification-failures"]{Verification failures}
+
+A refusal is always an exception — fail-closed never returns a value — and
+carries a reason so a product can tell the customer what was wrong with a
+license file without matching message text. Time outcomes (expiry,
+not-yet-valid, installation mismatch, missing activation) are not refusals;
+they come back from @racket[credential-status] as status reasons. See
+@hyperlink["https://github.com/turinglambdaai/permit/blob/main/docs/decisions/0002-typed-verification-failures.md"]{decision
+0002}.
+
+@defstruct*[(exn:fail:permit exn:fail) ([reason symbol?])]{
+The parent of every Permit refusal, on the verifier and the issuer side.
+@racket[exn:fail:permit-reason] is the one accessor for both.
+}
+
+@defstruct*[(exn:fail:permit:verify exn:fail:permit) ()]{
+Raised by @racket[verify-credential]. Its @racket[reason] is one of
+@racket[verify-failure-reasons]. Messages keep the
+@racket[raise-arguments-error] layout, so callers that matched message text
+keep working. A store that is not a @racket[trust-store?] is a plain
+contract error, not a refusal.
+}
+
+@defthing[verify-failure-reasons (listof symbol?)]{
+@racket['(envelope key-unknown key-revoked signature schema issuer key-window key-purpose)]
+in pipeline order — the wrapper could not be read or is not a Protocol v1
+envelope; the @tt{key_id} is not in the store; the key is revoked; the
+Ed25519 signature does not verify; the authenticated payload failed strict
+parsing or schema validation; the signed @tt{issuer} differs from the
+store's; @tt{issued_at} falls outside the key's issuance window; the key's
+purposes do not include the credential type. Because the order is the
+order a conforming verifier checks in, the reason also tells you which
+guard refused.
+}
 
 @section{Evaluating policy}
 
@@ -351,11 +388,13 @@ protocol's exact-byte rule forbids re-serializing the jsexpr afterwards.
 
 @subsection{Issuance failures}
 
-@defstruct*[(exn:fail:permit:issue exn:fail) ([reason symbol?])]{
-Every refusal by @racket[issue-credential] after its argument checks.
-@racket[reason] is one of @racket[issue-failure-reasons]; the message keeps
-the @racket[raise-arguments-error] layout, so callers that matched message
-text keep working. Argument-shape errors (a non-@racket[bytes?] payload, a
+@defstruct*[(exn:fail:permit:issue exn:fail:permit) ()]{
+Every refusal by @racket[issue-credential] after its argument checks; read
+the reason with @racket[exn:fail:permit-reason] (see
+@secref["verification-failures"] for the parent). The reason is one of
+@racket[issue-failure-reasons]; the message keeps the
+@racket[raise-arguments-error] layout, so callers that matched message text
+keep working. Argument-shape errors (a non-@racket[bytes?] payload, a
 non-@racket[trust-store?] store) remain ordinary contract errors.
 }
 

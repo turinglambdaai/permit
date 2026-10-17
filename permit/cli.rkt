@@ -361,6 +361,11 @@
 (define (run-cli [args (vector->list (current-command-line-arguments))])
   (with-handlers ([exn:fail? (lambda (e)
                                (eprintf "permit: ~a\n" (exn-message e))
+                               ;; typed refusals name the guard on a line of
+                               ;; their own so scripts read it without
+                               ;; parsing the message
+                               (when (exn:fail:permit? e)
+                                 (eprintf "reason: ~a\n" (exn:fail:permit-reason e)))
                                (exit 1))])
     (cond
       [(null? args) (usage)]
