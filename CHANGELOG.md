@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 - 2026-10-21
 
 ### Fixed
 
@@ -104,6 +104,22 @@
 - Make key validity windows constrain authenticated issuance time so retired keys do not expire perpetual rights.
 - Harden SemVer, Base64, recursive duplicate-key JSON rejection, trust-store aliases, per-key credential purposes, scalar capability conflicts, and strict JSON parsing.
 - Add explicit vs published-through feature grant modes, add-on and standard-limit policy queries, plus split normative protocol documentation.
+
+### Release evidence
+
+- Racket reference: 366 tests green on macOS arm64 (Apple Silicon) with
+  Racket 9.3 (CS); CI runs the same suite on Racket 9.0 and 9.3 across
+  Linux, Windows, and macOS, and regenerates the vector corpus with a
+  byte-for-byte diff check.
+- Independent implementation: the C conformance runner executes the
+  Protocol v1 corpus — 85 checks, 0 failures — built with OpenSSL 3.5.9
+  on macOS arm64, with CI covering Linux, macOS, and Windows.
+- Fresh-install gate: the package installs from a clean clone of the
+  release commit and passes the same suite before the tag is cut.
+- First integration: gptp-studio consumes the public `permit` facade in
+  production (`docs/integration-evidence.md`); the first independent
+  security review is closed with every finding fixed
+  (`docs/security-review-2026-10.md`).
 
 ## 0.1.0 - 2026-10-15
 
