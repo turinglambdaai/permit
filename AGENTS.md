@@ -46,3 +46,9 @@ Do not add payment processing, accounts, email, dashboards, pricing, tax, hosted
 Leave the repository understandable without chat history. A completed change includes the relevant code, tests, user-facing documentation, normative text when semantics change, and a concise changelog entry. Do not leave protocol decisions only in comments, issues, or conversation transcripts.
 
 Do not claim compatibility, security, or production readiness from unit tests alone. Record the concrete platforms, Racket versions, vectors, package-install checks, or external implementation evidence actually exercised.
+
+## 组合定位（Portfolio placement）
+
+- 轨道与授权：基础设施（签名授权协议层）；授权形态：Apache-2.0；商业归属：全开源。
+- 组合归属唯一权威：[PORTFOLIO.md](https://github.com/turinglambdaai/turinglambdaai.github.io/blob/master/PORTFOLIO.md)（turinglambdaai.github.io 仓库）。改归属/授权先改权威档，再同步本节。
+- 纪律：价格只进本仓 `PRICING.md`，且收费开始时才发布；README 与产品站不做价格预告。
