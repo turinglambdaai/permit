@@ -170,3 +170,5 @@ Expiry is not a refusal: an expired credential still verifies, and `credential-s
 - Preserve retired public keys needed by valid perpetual credentials.
 - Treat `installation_id` as a random application identifier, not a hardware fingerprint.
 - Test your integration against [`test-vectors/v1/`](../test-vectors/v1/) before shipping.
+
+[Upgrades, maturity and support](USING.md).

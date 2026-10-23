@@ -124,3 +124,5 @@ JSON 结果会包含整体是否可用、拒绝原因和本次策略查询结果
 - 保留仍被有效永久凭证依赖的 retired 公钥。
 - `installation_id` 使用应用生成的随机标识，不做硬件指纹。
 - 发布前用 [`test-vectors/v1/`](../test-vectors/v1/) 验证集成实现。
+
+[升级、成熟度与支持](USING.zh-CN.md)。

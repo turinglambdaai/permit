@@ -12,6 +12,12 @@ Permit is a framework-neutral protocol and Racket reference implementation for a
 
 Payment providers can tell you that money moved. Account systems can tell you who signed in. Permit turns durable product rights into signed, portable credentials that an application can verify locally with an embedded public trust store — without requiring an account, a network round trip, or a framework-owned licensing subsystem.
 
+## Start here
+
+Compose Permit beside an application when signed, offline-verifiable rights are needed. Start with an entitlement and omit activation unless the product explicitly needs an online lease. Free products do not need a licensing subsystem.
+
+[Fit, maturity, upgrades and support](docs/USING.md) · [简体中文](docs/USING.zh-CN.md)
+
 ## Why Permit?
 
 Commercial applications need two properties that are often treated as opposites:

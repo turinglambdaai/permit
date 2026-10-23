@@ -18,6 +18,11 @@
       document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
     })();
   </script>
+<style id="product-start-style">
+.product-start{max-width:1120px;margin:64px auto;padding:32px 24px;border-top:1px solid var(--border,#aaa);font:inherit;line-height:1.65}
+.product-start h2{font-size:clamp(1.7rem,3vw,2.4rem);letter-spacing:-.025em;margin:0 0 16px}.product-start h3{font-size:1.05rem;margin:0 0 10px}.product-start p{margin:0 0 16px;max-width:74ch}.product-start-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin:28px 0}.product-start a{text-decoration:underline;text-underline-offset:4px;overflow-wrap:anywhere}.product-start a:focus-visible{outline:2px solid currentColor;outline-offset:5px}.product-start .start-links{display:flex;gap:16px 24px;flex-wrap:wrap}.product-start .start-status{font-weight:600}.product-start .start-limits{font-size:.95em}
+html:lang(en) .reader-zh,html:lang(zh) .reader-en{display:none!important}@media(max-width:700px){.product-start{margin:40px auto;padding:24px 20px}.product-start-grid{grid-template-columns:1fr;gap:18px}}
+</style>
 </head>
 <body>
   <header class="nav">
@@ -255,7 +260,8 @@
       </div>
       <p data-i18n="boundary.body">Permit v0.1 does not implement payments, accounts, pricing, tax, email, dashboards, hosted metering, or a license server. Commerce owns the family payment-to-rights workflow and may issue credentials through the explicit issuer boundary; it does not belong in the verification core.</p>
     </section>
-  </main>
+  <section id="adoption" class="product-start"><h2 class="reader-en " lang="en">Build one verifiable result.</h2><h2 class="reader-zh " lang="zh">先完成一个可验证的结果。</h2><p class="reader-en " lang="en">Compose Permit beside an application when signed, offline-verifiable rights are needed. Start with an entitlement and omit activation unless the product explicitly needs an online lease. Free products do not need a licensing subsystem.</p><p class="reader-zh " lang="zh">需要签名且可离线验证的权益时，在应用旁组合 Permit。从 entitlement 开始；只有产品明确需要在线租约时才增加 activation。免费产品不需要授权子系统。</p><p class="reader-en " lang="en">The Racket implementation requires the runtime and crypto dependencies declared by the package. Protocol v1 is implemented, but a stable 1.0 compatibility promise has not been declared. Independent verifiers must execute the normative vectors.</p><p class="reader-zh " lang="zh">Racket 实现需要包声明的运行时与加密依赖。Protocol v1 已实现，但尚未宣布稳定 1.0 兼容承诺。独立验证器必须执行权威测试向量。</p><p class="reader-en " lang="en">Keep issuer private keys server-side and public trust stores in clients. Verify first, then evaluate product/time/feature policy. Revisions replace snapshots the client has received; they do not revoke an offline credential immediately. Preserve backup/rotation paths for perpetual rights and separate entitlement keys from update/publisher keys.</p><p class="reader-zh " lang="zh">签发私钥留在签发端，客户端仅持公钥信任库。先验签，再判断产品、时间和功能政策。revision 替换客户端已收到的快照，不会立即撤销离线凭据。为永久权益保留备份和轮换路径，权益密钥与更新、发行者密钥分离。</p><div class="start-links"><a class="reader-en" lang="en" href="https://github.com/turinglambdaai/permit/blob/main/docs/USING.md">Getting started, compatibility &amp; support</a><a class="reader-zh" lang="zh" href="https://github.com/turinglambdaai/permit/blob/main/docs/USING.zh-CN.md">入门、兼容与支持</a></div></section>
+</main>
 
   <footer>
     <div class="footer-brand"><span class="brand-mark" aria-hidden="true">P</span><b>Permit</b></div>
