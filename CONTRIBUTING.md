@@ -48,3 +48,7 @@ The final command proves deterministic vectors reproduce byte-for-byte. If it re
 Explain the problem, the preserved invariants, and the evidence used to verify the result. Call out compatibility or security effects directly. Do not mix protocol changes with unrelated formatting or website work.
 
 Never commit production private keys, customer credentials, payment data, account exports, or machine fingerprints. The repository's deterministic test key is public test material only.
+
+## Documentation languages
+
+Use English for default public docs and preserve complete Chinese README and onboarding paths. Keep examples, supported-platform limits, troubleshooting and privacy/security promises consistent in the same change. Preserve identifiers and copyable commands; technical protocols have one normative English source, not separate language implementations. See the [family documentation language policy](https://github.com/turinglambdaai/turinglambdaai.github.io/blob/master/docs/DOCUMENTATION-LANGUAGES.md) for scope and review checks.
