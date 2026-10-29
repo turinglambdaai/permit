@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Reject invalid JSON scalar tokens, including valid number/literal prefixes
+  followed by garbage, closing L1 from the October security review without
+  changing Protocol v1.
+
 ## 0.2.0 - 2026-10-21
 
 ### Fixed
