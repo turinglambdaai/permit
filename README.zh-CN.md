@@ -2,7 +2,7 @@
 
 **给独立软件的签名产品权益：离线可验证，需要时也能在线管理。**
 
-[![CI](https://github.com/turinglambdaai/permit/actions/workflows/ci.yml/badge.svg)](https://github.com/turinglambdaai/permit/actions/workflows/ci.yml) ![Racket](https://img.shields.io/badge/Racket-9F1D20?logo=racket&logoColor=white) [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE) ![Protocol](https://img.shields.io/badge/protocol-v1-C15F3C)
+[![CI](https://github.com/turlamai/permit/actions/workflows/ci.yml/badge.svg)](https://github.com/turlamai/permit/actions/workflows/ci.yml) ![Racket](https://img.shields.io/badge/Racket-9F1D20?logo=racket&logoColor=white) [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE) ![Protocol](https://img.shields.io/badge/protocol-v1-C15F3C)
 
 [English](README.md) · **中文**
 
@@ -38,7 +38,7 @@ Permit 与应用框架并列组合：
 
 Rivet 和 Glaze 都不依赖 Permit。更新制品签名与 Permit 凭证签名也始终使用不同的密钥和信任策略。长期依赖方向和职责分工见[框架集成契约](docs/framework-integration.md)。
 
-需要在线商业能力的产品可以增加 [Commerce](https://github.com/turinglambdaai/commerce)，负责支付渠道事件、商业状态投影、签发流程与凭证领取。Commerce 只通过显式 issuer API 使用 Permit；Permit 永不依赖 Commerce，产品仍只根据已验证的 Permit 凭证在本地授权。
+需要在线商业能力的产品可以增加 [Commerce](https://github.com/turlamai/commerce)，负责支付渠道事件、商业状态投影、签发流程与凭证领取。Commerce 只通过显式 issuer API 使用 Permit；Permit 永不依赖 Commerce，产品仍只根据已验证的 Permit 凭证在本地授权。
 
 ## 可表达的产品模型
 
@@ -61,7 +61,7 @@ Protocol v1 用一套词汇覆盖常见商业模型，但不把价格或支付�
 安装 Racket 包：
 
 ```bash
-raco pkg install --auto --name permit https://github.com/turinglambdaai/permit.git
+raco pkg install --auto --name permit https://github.com/turlamai/permit.git
 ```
 
 生成 Ed25519 密钥对和初始信任库：

@@ -5,7 +5,7 @@
 (define build-deps '("racket-doc" "scribble-lib"))
 (define pkg-desc "Offline-verifiable, online-manageable signed entitlements")
 (define version "0.2")
-(define pkg-authors '(turinglambdaai))
+(define pkg-authors '(turlamai))
 (define license 'Apache-2.0)
 (define raco-commands
   '(("permit" permit/raco "issue and verify Permit credentials" #f)))

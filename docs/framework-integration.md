@@ -93,4 +93,4 @@ product or a separately versioned adapter so framework users who do not sell
 commercial software inherit no policy or dependency.
 
 The canonical five-repository graph and release order are defined by the
-[family architecture](https://github.com/turinglambdaai/keel/blob/main/docs/family-architecture.md).
+[family architecture](https://github.com/turlamai/keel/blob/main/docs/family-architecture.md).
