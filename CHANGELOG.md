@@ -4,6 +4,10 @@
 
 ### Fixed
 
+- Repair stale pre-rename GitHub URLs in the contributor guide and signed
+  v0.2.0 release evidence link; include every root Markdown entry (including
+  ROADMAP and CONTRIBUTING) in the documentation-link CI gate.
+
 - Reject invalid JSON scalar tokens, including valid number/literal prefixes
   followed by garbage, closing L1 from the October security review without
   changing Protocol v1.
