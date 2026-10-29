@@ -6,7 +6,7 @@ Permit is a framework-neutral commercial-entitlement protocol and Racket referen
 
 The five-repository dependency graph, ownership table, change routing, release
 order, and trust boundaries are maintained in Keel's
-[`docs/family-architecture.md`](https://github.com/turinglambdaai/keel/blob/main/docs/family-architecture.md).
+[`docs/family-architecture.md`](https://github.com/turlamai/keel/blob/main/docs/family-architecture.md).
 Permit's implementation queue remains owned by `ROADMAP.md`; its protocol and
 trust domain stay independent from Keel and the application frameworks.
 
@@ -49,15 +49,15 @@ Do not claim compatibility, security, or production readiness from unit tests al
 
 ## Portfolio placement
 
-This is open-source infrastructure under the repository's existing LICENSE, not a product paywall or pricing authority. Portfolio decisions live in [PORTFOLIO](https://github.com/turinglambdaai/turinglambdaai.github.io/blob/master/PORTFOLIO.md); product-specific commercial rules stay in the product repository.
+This is open-source infrastructure under the repository's existing LICENSE, not a product paywall or pricing authority. Portfolio decisions live in [PORTFOLIO](https://github.com/turlamai/turlamai.github.io/blob/master/PORTFOLIO.md); product-specific commercial rules stay in the product repository.
 
 ## Product delivery coordination
 
-The [family delivery standard](https://github.com/turinglambdaai/turinglambdaai.github.io/blob/master/docs/PRODUCT-STANDARD.md) governs evidence and product handoff.
+The [family delivery standard](https://github.com/turlamai/turlamai.github.io/blob/master/docs/PRODUCT-STANDARD.md) governs evidence and product handoff.
 Keep the implementation queue in `ROADMAP.md` and preserve this library's domain
 boundary. Products own interaction meaning, commercial policy and user data;
 do not add those policies to a framework facade.
 
 ## Documentation languages
 
-Default public entry points and technical references are English. Maintain complete Chinese README/getting-started user paths with reciprocal links; preserve commands, API names and protocol semantics. Update both languages when a public user path changes. Technical references remain one normative source; Chinese guides explain and link to them. Follow the [family language policy](https://github.com/turinglambdaai/turinglambdaai.github.io/blob/master/docs/DOCUMENTATION-LANGUAGES.md). Historical internal notes need not all be translated.
+Default public entry points and technical references are English. Maintain complete Chinese README/getting-started user paths with reciprocal links; preserve commands, API names and protocol semantics. Update both languages when a public user path changes. Technical references remain one normative source; Chinese guides explain and link to them. Follow the [family language policy](https://github.com/turlamai/turlamai.github.io/blob/master/docs/DOCUMENTATION-LANGUAGES.md). Historical internal notes need not all be translated.

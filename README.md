@@ -2,7 +2,7 @@
 
 **Signed product rights for independent software — verifiable offline, manageable online when you need it.**
 
-[![CI](https://github.com/turinglambdaai/permit/actions/workflows/ci.yml/badge.svg)](https://github.com/turinglambdaai/permit/actions/workflows/ci.yml) ![Racket](https://img.shields.io/badge/Racket-9F1D20?logo=racket&logoColor=white) [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE) ![Protocol](https://img.shields.io/badge/protocol-v1-C15F3C)
+[![CI](https://github.com/turlamai/permit/actions/workflows/ci.yml/badge.svg)](https://github.com/turlamai/permit/actions/workflows/ci.yml) ![Racket](https://img.shields.io/badge/Racket-9F1D20?logo=racket&logoColor=white) [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE) ![Protocol](https://img.shields.io/badge/protocol-v1-C15F3C)
 
 **English** · [中文](README.zh-CN.md)
 
@@ -38,7 +38,7 @@ Permit composes beside an application framework:
 
 Rivet and Glaze do not depend on Permit. Update-artifact signing and Permit credential signing also use separate keys and trust policies. See the [framework integration contract](docs/framework-integration.md) for the durable dependency and responsibility boundaries.
 
-Online products may add [Commerce](https://github.com/turinglambdaai/commerce)
+Online products may add [Commerce](https://github.com/turlamai/commerce)
 for provider events, commercial projections, issuance workflow, and credential
 claim delivery. Commerce consumes the explicit issuer API; Permit never imports
 Commerce, and products still authorize locally from verified credentials.
@@ -64,7 +64,7 @@ New to signed credentials? Follow the [step-by-step getting-started guide](docs/
 Install the Racket package:
 
 ```bash
-raco pkg install --auto --name permit https://github.com/turinglambdaai/permit.git
+raco pkg install --auto --name permit https://github.com/turlamai/permit.git
 ```
 
 Generate an Ed25519 key pair and starter trust store:

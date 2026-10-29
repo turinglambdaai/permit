@@ -22,7 +22,7 @@ entitlement.permit.json ----------> 客户凭证
 ## 1. 安装 Permit
 
 ```bash
-raco pkg install --auto --name permit https://github.com/turinglambdaai/permit.git
+raco pkg install --auto --name permit https://github.com/turlamai/permit.git
 raco permit help
 ```
 

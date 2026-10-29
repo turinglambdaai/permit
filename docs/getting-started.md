@@ -22,7 +22,7 @@ The private key belongs only in the issuer environment. The application receives
 ## 1. Install Permit
 
 ```bash
-raco pkg install --auto --name permit https://github.com/turinglambdaai/permit.git
+raco pkg install --auto --name permit https://github.com/turlamai/permit.git
 raco permit help
 ```
 
