@@ -36,7 +36,7 @@ before any v0.2 release.
 | M2 | medium | C `strtoll` ignores `ERANGE`; integers beyond int64 are silently clamped, flipping an activation-lease binding decision against Racket's exact bignums | fixed — out-of-range integers are rejected |
 | M3 | medium/low | C accepts `+inf` as a capability value (`1e999`); Racket's `rational?` rejects it | fixed — non-finite reals rejected |
 | M4 | medium/low | C matches JSON member names with `strcmp`, so a `"type\u0000"` key aliases the schema field | fixed — NUL rejected in member names at parse time |
-| L1 | low | Racket strict JSON reader accepts a bare literal token with trailing garbage (`123x` → `123`); currently unreachable because every consumer requires an object root | known, watch: reachable only if a non-object root is ever accepted |
+| L1 | low | Racket strict JSON reader accepted a bare literal token with trailing garbage (`123x` → `123`); consumers required an object root | fixed after v0.2: the scanner checks complete scalar tokens, with positive and negative regression tests |
 | L2 | low | C ignored trailing bytes after the DER public key; Racket rejects | fixed — decoder must consume exactly `der_len` bytes |
 | L3 | low | Racket trust-store aliasing compares Base64 text, relying on canonical-encoding premises; C compares raw 32 bytes | fixed — Racket compares decoded key bytes, matching C |
 | I1 | informational | Racket accepts NUL inside key ids, C rejects the store | fixed — control characters rejected in key ids on both sides |
