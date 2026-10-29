@@ -2,6 +2,7 @@
 
 (require crypto
          (only-in crypto/libcrypto libcrypto-factory)
+         (only-in crypto/sodium sodium-factory)
          json
          rackunit
          racket/file
@@ -29,15 +30,41 @@
    (string-append "e5564300c360ac729086e2cc806e828a84877f1eb8e5d974d873e06522490155"
                   "5fb8821590a33bacc61e39701cf9b46bd25bf5f0595bbe24655141438e7a100b")))
 
+;; Prefer OpenSSL but exercise the same RFC 8032 key against either
+;; independently supported provider. If neither backend exists, this
+;; security test must fail instead of silently skipping verification.
+(define ed25519-factories (list libcrypto-factory sodium-factory))
 (define private-key
   (datum->pk-key (list 'eddsa 'private 'ed25519 public-raw seed)
                  'rkt-private
-                 (list libcrypto-factory)))
+                 ed25519-factories))
 (define public-key (pk-key->public-only-key private-key))
 
 (check-equal? (ed25519-sign private-key #"") rfc-signature)
 (check-true (ed25519-verify public-key #"" rfc-signature))
 (check-false (ed25519-verify public-key #"changed" rfc-signature))
+
+(for ([factory (in-list ed25519-factories)]
+      #:when (get-pk 'eddsa factory))
+  (define factory-key
+    (datum->pk-key (list 'eddsa 'private 'ed25519 public-raw seed)
+                   'rkt-private (list factory)))
+  (check-equal? (ed25519-sign factory-key #"") rfc-signature)
+  (check-true (ed25519-verify
+               (pk-key->public-only-key factory-key) #"" rfc-signature))
+  (check-false (ed25519-verify
+                (pk-key->public-only-key factory-key)
+                #"changed" rfc-signature)))
+
+;; Generating an issuer key must work without relying on ambient factories;
+;; the public API chooses only audited Ed25519 implementations locally.
+(parameterize ([crypto-factories '()])
+  (define-values (generated-private generated-public)
+    (generate-ed25519-keypair))
+  (define sig (ed25519-sign generated-private #"permit provider isolation"))
+  (check-true (ed25519-verify
+               generated-public #"permit provider isolation" sig))
+  (check-equal? (crypto-factories) '()))
 
 (define (constraints #:use [use 'null]
                      #:updates [updates 'null]
