@@ -158,9 +158,9 @@
                    [else
                     (define next (string-ref text end))
                     (if (or (json-whitespace? next)
-                            (char=? next #\\,)
-                            (char=? next #\\])
-                            (char=? next #\\}))
+                            (char=? next #\,)
+                            (char=? next #\])
+                            (char=? next #\}))
                         end
                         (loop (add1 end)))])))
              (unless (regexp-match? scalar-token-rx
