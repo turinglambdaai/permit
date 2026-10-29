@@ -16,12 +16,10 @@
 
 (define markdown-files
   (append
+   ;; Root-level roadmap and contribution guides are public entry points too:
+   ;; never allow them to escape the local-link regression gate.
    (filter markdown-file?
-           (list (build-path repository-root "README.md")
-                 (build-path repository-root "README.zh-CN.md")
-                 (build-path repository-root "SECURITY.md")
-                 (build-path repository-root "AGENTS.md")
-                 (build-path repository-root "CHANGELOG.md")))
+           (directory-list repository-root #:build? #t))
    (append-map
     (lambda (directory)
       (find-files markdown-file? (build-path repository-root directory)))
