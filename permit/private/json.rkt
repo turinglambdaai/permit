@@ -19,6 +19,11 @@
       (char=? ch #\return)
       (char=? ch #\newline)))
 
+;; Validate each scalar token in full, not just the prefix parsed by read-json.
+;; This closes the 123x -> 123 acceptance noted as L1 in the security review.
+(define scalar-token-rx
+  #px"^(?:true|false|null|-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?)$")
+
 (define (read-json-bytes/strict who raw)
   (unless (bytes? raw)
     (raise-argument-error who "bytes?" raw))
@@ -146,17 +151,22 @@
             [(char=? ch #\[) (scan-array cursor (add1 depth))]
             [(char=? ch #\") (scan-string cursor)]
             [else
-             (let loop ([end cursor])
-               (cond
-                 [(>= end length*) end]
-                 [else
-                  (define next (string-ref text end))
-                  (if (or (json-whitespace? next)
-                          (char=? next #\,)
-                          (char=? next #\])
-                          (char=? next #\}))
-                      end
-                      (loop (add1 end)))]))])))
+             (define end
+               (let loop ([end cursor])
+                 (cond
+                   [(>= end length*) end]
+                   [else
+                    (define next (string-ref text end))
+                    (if (or (json-whitespace? next)
+                            (char=? next #\\,)
+                            (char=? next #\\])
+                            (char=? next #\\}))
+                        end
+                        (loop (add1 end)))])))
+             (unless (regexp-match? scalar-token-rx
+                                    (substring text cursor end))
+               (fail who "invalid JSON scalar" "offset" cursor))
+             end])))
 
   (define scanned-end (skip-ws (scan-value 0 0)))
   (unless (= scanned-end length*)
