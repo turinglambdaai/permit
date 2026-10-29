@@ -47,3 +47,16 @@
          (format "~a links to missing local target ~a"
                  (find-relative-path repository-root document)
                  target))))))
+
+;; Cross-repository onboarding, release evidence and trust-boundary links
+;; must not point to the retired repository owner. Historical changelog
+;; entries may retain history; current normative entry points may not.
+(for ([entry '("CONTRIBUTING.md"
+               "ROADMAP.md"
+               "docs/architecture.md"
+               "docs/integration-evidence.md"
+               "docs/management-boundaries.md")])
+  (check-false
+   (string-contains? (file->string (build-path repository-root entry))
+                     "https://github.com/turinglambdaai/")
+   (format "~a must use the current GitHub owner" entry)))
