@@ -1,6 +1,8 @@
 #lang racket/base
 
 (require crypto
+         (only-in crypto/libcrypto libcrypto-factory)
+         (only-in crypto/sodium sodium-factory)
          json
          rackunit
          racket/file
@@ -116,7 +118,11 @@
   (define vector-envelope
     (read-envelope (build-path vector-root (hash-ref entry 'credential_file))))
   (check-equal? (bytes-length payload) (hash-ref entry 'payload_length))
-  (check-equal? (bytes->hex-string (digest 'sha256 payload))
+  (check-equal? (bytes->hex-string
+                 (parameterize
+                     ([crypto-factories
+                       (list libcrypto-factory sodium-factory)])
+                   (digest 'sha256 payload)))
                 (hash-ref entry 'payload_sha256_hex))
   (check-equal? (permit-envelope-payload vector-envelope) payload)
   (check-equal? (permit-envelope-key-id vector-envelope)
