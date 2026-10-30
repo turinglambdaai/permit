@@ -4,6 +4,13 @@
 
 ### Fixed
 
+- Prefer OpenSSL 3 Ed25519 and use an explicit libsodium backend fallback
+  where available, without mutating the caller's global crypto-factory
+  parameter. Extend RFC 8032 known-answer, rejection and ambient-factory
+  tests; document native runtime requirements and the official Racket
+  catalog build failure (compiled but 6 cryptographic tests failed).
+  Never skip verification when both native providers are unavailable.
+
 - Reject invalid JSON scalar tokens, including valid number/literal prefixes
   followed by garbage, closing L1 from the October security review without
   changing Protocol v1.
