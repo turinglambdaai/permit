@@ -2,6 +2,7 @@
 
 (require crypto
          (only-in crypto/libcrypto libcrypto-factory)
+         (only-in crypto/sodium sodium-factory)
          racket/file
          "private/encoding.rkt")
 
@@ -16,10 +17,12 @@
          public-key->base64
          base64->public-key)
 
-;; Pinning the provider avoids optional FFI backends being loaded merely to
-;; verify a credential. Official Racket distributions bundle OpenSSL.
-(crypto-factories (list libcrypto-factory))
-(define factories (list libcrypto-factory))
+;; Racket's package build machines may lack a working OpenSSL 3 FFI even
+;; when the package itself compiles. Restrict Ed25519 to two audited native
+;; implementations (OpenSSL first, libsodium second), not the shifting
+;; crypto/all-factories list. A missing native provider still fails closed.
+;; Avoid mutating the caller thread's crypto-factories parameter on import.
+(define factories (list libcrypto-factory sodium-factory))
 
 (define (ed25519-key? key private?)
   (and (pk-key? key)

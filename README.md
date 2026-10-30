@@ -12,6 +12,15 @@ Permit is a framework-neutral protocol and Racket reference implementation for a
 
 Payment providers can tell you that money moved. Account systems can tell you who signed in. Permit turns durable product rights into signed, portable credentials that an application can verify locally with an embedded public trust store — without requiring an account, a network round trip, or a framework-owned licensing subsystem.
 
+## Cryptographic runtime requirements
+
+Permit requires a working native **Ed25519** implementation to verify or issue
+credentials. The Racket reference prefers OpenSSL 3+ and may use libsodium
+when OpenSSL's Ed25519 support is unavailable. If neither provider is usable,
+cryptographic operations fail closed; compiling the package is not evidence
+that its runtime is supported. See the
+[native backend diagnostics and official package-build evidence](docs/crypto-runtime.md).
+
 ## Start here
 
 Compose Permit beside an application when signed, offline-verifiable rights are needed. Start with an entitlement and omit activation unless the product explicitly needs an online lease. Free products do not need a licensing subsystem.
